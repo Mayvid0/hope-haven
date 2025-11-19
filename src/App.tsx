@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Mission from "./pages/Mission";
 import Contact from "./pages/Contact";
+import Teams from "./pages/Teams";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,8 +25,8 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/mission" element={<Mission />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/teams" element={<Teams />} />
             {/* Placeholder routes for future pages */}
-            <Route path="/teams" element={<NotFound />} />
             <Route path="/projects" element={<NotFound />} />
             <Route path="/awareness" element={<NotFound />} />
             <Route path="/blogs" element={<NotFound />} />
