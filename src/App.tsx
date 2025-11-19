@@ -9,6 +9,7 @@ import About from "./pages/About";
 import Mission from "./pages/Mission";
 import Contact from "./pages/Contact";
 import Teams from "./pages/Teams";
+import Testimony from "./pages/Testimony";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,11 +27,11 @@ const App = () => (
             <Route path="/mission" element={<Mission />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/teams" element={<Teams />} />
+            <Route path="/testimony" element={<Testimony />} />
             {/* Placeholder routes for future pages */}
             <Route path="/projects" element={<NotFound />} />
             <Route path="/awareness" element={<NotFound />} />
             <Route path="/blogs" element={<NotFound />} />
-            <Route path="/testimony" element={<NotFound />} />
             <Route path="/donate" element={<NotFound />} />
             <Route path="/volunteer" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
