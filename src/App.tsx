@@ -13,6 +13,7 @@ import Testimony from "./pages/Testimony";
 import Projects from "./pages/Projects";
 import Awareness from "./pages/Awareness";
 import Blogs from "./pages/Blogs";
+import Donate from "./pages/Donate";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,8 +35,8 @@ const App = () => (
             <Route path="/projects" element={<Projects />} />
             <Route path="/awareness" element={<Awareness />} />
             <Route path="/blogs" element={<Blogs />} />
+            <Route path="/donate" element={<Donate />} />
             {/* Placeholder routes for future pages */}
-            <Route path="/donate" element={<NotFound />} />
             <Route path="/volunteer" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
