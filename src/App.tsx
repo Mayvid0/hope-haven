@@ -16,6 +16,8 @@ import Blogs from "./pages/Blogs";
 import BlogPost from "./pages/BlogPost";
 import Donate from "./pages/Donate";
 import Volunteer from "./pages/Volunteer";
+import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,7 +42,8 @@ const App = () => (
             <Route path="/blogs/:id" element={<BlogPost />} />
             <Route path="/donate" element={<Donate />} />
             <Route path="/volunteer" element={<Volunteer />} />
-            {/* Placeholder routes for future pages */}
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
