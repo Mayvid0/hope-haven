@@ -11,6 +11,7 @@ const navigationLinks = [
   { name: "Teams", path: "/teams" },
   { name: "Projects", path: "/projects" },
   { name: "Awareness", path: "/awareness" },
+  { name: "Events", path: "/events" },
   { name: "Blogs", path: "/blogs" },
   { name: "Testimony", path: "/testimony" },
   { name: "Contact", path: "/contact" },

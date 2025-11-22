@@ -6,6 +6,7 @@ import { LogOut } from "lucide-react";
 import BlogManagement from "@/components/admin/BlogManagement";
 import CommentModeration from "@/components/admin/CommentModeration";
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
+import EventsManagement from "@/components/admin/EventsManagement";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -43,9 +44,10 @@ const AdminDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="posts" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="posts">Blog Posts</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -55,6 +57,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="comments" className="space-y-4">
             <CommentModeration />
+          </TabsContent>
+
+          <TabsContent value="events" className="space-y-4">
+            <EventsManagement />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
