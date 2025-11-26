@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Heart } from "lucide-react";
+import { Menu, X, Heart, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navigationLinks = [
   { name: "Home", path: "/" },
@@ -20,6 +21,7 @@ const navigationLinks = [
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut, isAdmin } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -46,12 +48,39 @@ export const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                to="/admin/dashboard"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary",
+                  location.pathname === "/admin/dashboard"
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              >
+                Admin
+              </Link>
+            )}
             <Button asChild size="sm" className="ml-2">
               <Link to="/donate">Donate Now</Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link to="/volunteer">Volunteer</Link>
             </Button>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                </span>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -82,6 +111,20 @@ export const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                to="/admin/dashboard"
+                onClick={() => setIsOpen(false)}
+                className={cn(
+                  "block py-2 text-sm font-medium transition-colors hover:text-primary",
+                  location.pathname === "/admin/dashboard"
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              >
+                Admin
+              </Link>
+            )}
             <div className="flex flex-col gap-2 pt-2">
               <Button asChild size="sm" className="w-full">
                 <Link to="/donate" onClick={() => setIsOpen(false)}>
@@ -93,6 +136,21 @@ export const Navbar = () => {
                   Volunteer
                 </Link>
               </Button>
+              {user ? (
+                <Button variant="ghost" size="sm" className="w-full" onClick={() => {
+                  signOut();
+                  setIsOpen(false);
+                }}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              ) : (
+                <Button asChild variant="ghost" size="sm" className="w-full">
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>
+                    Sign In
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         )}

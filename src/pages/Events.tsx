@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, MapPin, Clock, Users, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const rsvpSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  email: z.string().email("Invalid email address").max(255),
+  phone: z.string().min(10, "Phone number must be at least 10 digits").max(20),
+});
 
 interface Event {
   id: string;
@@ -26,89 +34,96 @@ const Events = () => {
   const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [rsvpData, setRsvpData] = useState({ name: "", email: "", phone: "" });
-  const [events] = useState<Event[]>([
-    {
-      id: "1",
-      title: "Breast Cancer Awareness Walk",
-      description: "Join us for our annual awareness walk to support breast cancer research and survivors. All ages welcome!",
-      date: "2024-04-15",
-      time: "9:00 AM",
-      location: "City Park, Main Entrance",
-      type: "awareness",
-      capacity: 500,
-      registered: 287,
-      image: "/placeholder.svg"
-    },
-    {
-      id: "2",
-      title: "Understanding Cancer Prevention Workshop",
-      description: "Learn about lifestyle changes, screening guidelines, and prevention strategies from medical experts.",
-      date: "2024-04-22",
-      time: "2:00 PM",
-      location: "Community Health Center",
-      type: "workshop",
-      capacity: 50,
-      registered: 38,
-      image: "/placeholder.svg"
-    },
-    {
-      id: "3",
-      title: "Hope Gala Fundraiser",
-      description: "An elegant evening of dinner, entertainment, and silent auction to raise funds for cancer research.",
-      date: "2024-05-10",
-      time: "6:00 PM",
-      location: "Grand Hotel Ballroom",
-      type: "fundraising",
-      capacity: 200,
-      registered: 145,
-      image: "/placeholder.svg"
-    },
-    {
-      id: "4",
-      title: "Nutrition & Wellness for Cancer Survivors",
-      description: "Interactive workshop on nutrition, exercise, and wellness strategies for cancer survivors and caregivers.",
-      date: "2024-05-18",
-      time: "10:00 AM",
-      location: "Wellness Center",
-      type: "workshop",
-      capacity: 40,
-      registered: 22,
-      image: "/placeholder.svg"
-    },
-    {
-      id: "5",
-      title: "Pediatric Cancer Awareness Day",
-      description: "Family-friendly event featuring activities for children, resources for parents, and survivor stories.",
-      date: "2024-06-01",
-      time: "11:00 AM",
-      location: "Children's Hospital Courtyard",
-      type: "awareness",
-      capacity: 300,
-      registered: 156,
-      image: "/placeholder.svg"
-    },
-    {
-      id: "6",
-      title: "Annual Charity Golf Tournament",
-      description: "18-hole tournament followed by awards ceremony and dinner. All proceeds support cancer patient services.",
-      date: "2024-06-15",
-      time: "7:00 AM",
-      location: "Riverside Golf Club",
-      type: "fundraising",
-      capacity: 144,
-      registered: 98,
-      image: "/placeholder.svg"
-    }
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleRSVP = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load events. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "RSVP Confirmed!",
-      description: `You've successfully registered for ${selectedEvent?.title}. Check your email for details.`
-    });
-    setSelectedEvent(null);
-    setRsvpData({ name: "", email: "", phone: "" });
+    if (!selectedEvent) return;
+
+    setSubmitting(true);
+
+    try {
+      // Validate input
+      rsvpSchema.parse(rsvpData);
+
+      // Insert RSVP into database
+      const { error: rsvpError } = await supabase
+        .from('rsvps')
+        .insert({
+          event_id: selectedEvent.id,
+          name: rsvpData.name,
+          email: rsvpData.email,
+          phone: rsvpData.phone,
+        });
+
+      if (rsvpError) {
+        if (rsvpError.code === '23505') {
+          throw new Error('You have already registered for this event');
+        }
+        throw rsvpError;
+      }
+
+      // Send confirmation email
+      const { error: emailError } = await supabase.functions.invoke('send-rsvp-confirmation', {
+        body: {
+          name: rsvpData.name,
+          email: rsvpData.email,
+          eventTitle: selectedEvent.title,
+          eventDate: selectedEvent.date,
+          eventTime: selectedEvent.time,
+          eventLocation: selectedEvent.location,
+        },
+      });
+
+      if (emailError) {
+        console.error('Email error:', emailError);
+      }
+
+      toast({
+        title: "RSVP Confirmed!",
+        description: `You've successfully registered for ${selectedEvent.title}. Check your email for details.`,
+      });
+
+      setSelectedEvent(null);
+      setRsvpData({ name: "", email: "", phone: "" });
+      fetchEvents(); // Refresh events to update registered count
+    } catch (error: any) {
+      console.error('RSVP error:', error);
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Failed to register for event. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const filterEvents = (type?: string) => {
@@ -219,8 +234,8 @@ const Events = () => {
                   <p className="text-muted-foreground">{new Date(event.date).toLocaleDateString()} at {event.time}</p>
                   <p className="text-muted-foreground">{event.location}</p>
                 </div>
-                <Button type="submit" className="w-full">
-                  Confirm Registration
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? "Registering..." : "Confirm Registration"}
                 </Button>
               </form>
             </DialogContent>
@@ -255,35 +270,59 @@ const Events = () => {
             </TabsList>
 
             <TabsContent value="all" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filterEvents().map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
+              {loading ? (
+                <div className="text-center py-12">Loading events...</div>
+              ) : events.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">No events available</div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filterEvents().map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="awareness" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filterEvents("awareness").map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
+              {loading ? (
+                <div className="text-center py-12">Loading events...</div>
+              ) : filterEvents("awareness").length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">No awareness events available</div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filterEvents("awareness").map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="workshop" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filterEvents("workshop").map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
+              {loading ? (
+                <div className="text-center py-12">Loading events...</div>
+              ) : filterEvents("workshop").length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">No workshop events available</div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filterEvents("workshop").map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="fundraising" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filterEvents("fundraising").map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
+              {loading ? (
+                <div className="text-center py-12">Loading events...</div>
+              ) : filterEvents("fundraising").length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">No fundraising events available</div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filterEvents("fundraising").map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>

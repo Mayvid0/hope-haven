@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Users, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Event {
   id: string;
@@ -25,41 +27,9 @@ interface Event {
 
 const EventsManagement = () => {
   const { toast } = useToast();
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: "1",
-      title: "Breast Cancer Awareness Walk",
-      description: "Join us for our annual awareness walk",
-      date: "2024-04-15",
-      time: "9:00 AM",
-      location: "City Park, Main Entrance",
-      type: "awareness",
-      capacity: 500,
-      registered: 287
-    },
-    {
-      id: "2",
-      title: "Understanding Cancer Prevention Workshop",
-      description: "Learn about lifestyle changes and prevention",
-      date: "2024-04-22",
-      time: "2:00 PM",
-      location: "Community Health Center",
-      type: "workshop",
-      capacity: 50,
-      registered: 38
-    },
-    {
-      id: "3",
-      title: "Hope Gala Fundraiser",
-      description: "An elegant evening of dinner and entertainment",
-      date: "2024-05-10",
-      time: "6:00 PM",
-      location: "Grand Hotel Ballroom",
-      type: "fundraising",
-      capacity: 200,
-      registered: 145
-    }
-  ]);
+  const { isAdmin } = useAuth();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState({
@@ -72,36 +42,91 @@ const EventsManagement = () => {
     capacity: 50
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isAdmin) {
+      fetchEvents();
+    }
+  }, [isAdmin]);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load events",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingEvent) {
-      setEvents(events.map(ev => ev.id === editingEvent.id ? {
-        ...editingEvent,
-        ...formData
-      } : ev));
-      toast({ title: "Event updated successfully" });
-    } else {
-      const newEvent: Event = {
-        id: Date.now().toString(),
-        ...formData,
-        registered: 0
-      };
-      setEvents([newEvent, ...events]);
-      toast({ title: "Event created successfully" });
+    try {
+      if (editingEvent) {
+        const { error } = await supabase
+          .from('events')
+          .update({
+            title: formData.title,
+            description: formData.description,
+            date: formData.date,
+            time: formData.time,
+            location: formData.location,
+            type: formData.type,
+            capacity: formData.capacity,
+          })
+          .eq('id', editingEvent.id);
+
+        if (error) throw error;
+        toast({ title: "Event updated successfully" });
+      } else {
+        const { error } = await supabase
+          .from('events')
+          .insert({
+            title: formData.title,
+            description: formData.description,
+            date: formData.date,
+            time: formData.time,
+            location: formData.location,
+            type: formData.type,
+            capacity: formData.capacity,
+            registered: 0,
+          });
+
+        if (error) throw error;
+        toast({ title: "Event created successfully" });
+      }
+      
+      setIsDialogOpen(false);
+      setEditingEvent(null);
+      setFormData({
+        title: "",
+        description: "",
+        date: "",
+        time: "",
+        location: "",
+        type: "awareness",
+        capacity: 50
+      });
+      fetchEvents();
+    } catch (error) {
+      console.error('Error saving event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save event",
+        variant: "destructive",
+      });
     }
-    
-    setIsDialogOpen(false);
-    setEditingEvent(null);
-    setFormData({
-      title: "",
-      description: "",
-      date: "",
-      time: "",
-      location: "",
-      type: "awareness",
-      capacity: 50
-    });
   };
 
   const handleEdit = (event: Event) => {
@@ -118,9 +143,24 @@ const EventsManagement = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setEvents(events.filter(ev => ev.id !== id));
-    toast({ title: "Event deleted successfully" });
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: "Event deleted successfully" });
+      fetchEvents();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event",
+        variant: "destructive",
+      });
+    }
   };
 
   const getTypeColor = (type: string) => {
@@ -131,6 +171,28 @@ const EventsManagement = () => {
       default: return "default";
     }
   };
+
+  if (!isAdmin) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">
+            You do not have permission to access this page.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">Loading events...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
