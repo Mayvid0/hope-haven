@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BlogPost {
   id: string;
@@ -18,34 +20,15 @@ interface BlogPost {
   content: string;
   category: string;
   author: string;
-  date: string;
+  created_at: string;
   status: "published" | "draft";
 }
 
 const BlogManagement = () => {
   const { toast } = useToast();
-  const [posts, setPosts] = useState<BlogPost[]>([
-    {
-      id: "1",
-      title: "Sarah's Journey Through Recovery",
-      excerpt: "A powerful story of hope and healing",
-      content: "Full content here...",
-      category: "survivor-stories",
-      author: "Sarah Johnson",
-      date: "2024-03-15",
-      status: "published"
-    },
-    {
-      id: "2",
-      title: "Understanding Early Detection",
-      excerpt: "Why screening saves lives",
-      content: "Full content here...",
-      category: "medical-insights",
-      author: "Dr. Michael Chen",
-      date: "2024-03-10",
-      status: "published"
-    }
-  ]);
+  const { isAdmin } = useAuth();
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [formData, setFormData] = useState({
@@ -57,36 +40,90 @@ const BlogManagement = () => {
     status: "draft" as "published" | "draft"
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isAdmin) {
+      fetchPosts();
+    }
+  }, [isAdmin]);
+
+  const fetchPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts((data || []).map(post => ({
+        ...post,
+        status: post.status as "published" | "draft"
+      })));
+    } catch (error: any) {
+      console.error('Error fetching posts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load blog posts",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingPost) {
-      setPosts(posts.map(p => p.id === editingPost.id ? {
-        ...editingPost,
-        ...formData,
-        date: new Date().toISOString().split('T')[0]
-      } : p));
-      toast({ title: "Post updated successfully" });
-    } else {
-      const newPost: BlogPost = {
-        id: Date.now().toString(),
-        ...formData,
-        date: new Date().toISOString().split('T')[0]
-      };
-      setPosts([newPost, ...posts]);
-      toast({ title: "Post created successfully" });
+    try {
+      if (editingPost) {
+        const { error } = await supabase
+          .from('blog_posts')
+          .update({
+            title: formData.title,
+            excerpt: formData.excerpt,
+            content: formData.content,
+            category: formData.category,
+            author: formData.author,
+            status: formData.status,
+          })
+          .eq('id', editingPost.id);
+
+        if (error) throw error;
+        toast({ title: "Post updated successfully" });
+      } else {
+        const { error } = await supabase
+          .from('blog_posts')
+          .insert({
+            title: formData.title,
+            excerpt: formData.excerpt,
+            content: formData.content,
+            category: formData.category,
+            author: formData.author,
+            status: formData.status,
+          });
+
+        if (error) throw error;
+        toast({ title: "Post created successfully" });
+      }
+      
+      setIsDialogOpen(false);
+      setEditingPost(null);
+      setFormData({
+        title: "",
+        excerpt: "",
+        content: "",
+        category: "survivor-stories",
+        author: "",
+        status: "draft"
+      });
+      fetchPosts();
+    } catch (error: any) {
+      console.error('Error saving post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save blog post",
+        variant: "destructive",
+      });
     }
-    
-    setIsDialogOpen(false);
-    setEditingPost(null);
-    setFormData({
-      title: "",
-      excerpt: "",
-      content: "",
-      category: "survivor-stories",
-      author: "",
-      status: "draft"
-    });
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -102,10 +139,47 @@ const BlogManagement = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setPosts(posts.filter(p => p.id !== id));
-    toast({ title: "Post deleted successfully" });
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: "Post deleted successfully" });
+      fetchPosts();
+    } catch (error: any) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete blog post",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (!isAdmin) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">
+            You do not have permission to access this page.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">Loading blog posts...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -241,7 +315,7 @@ const BlogManagement = () => {
                   </Badge>
                 </TableCell>
                 <TableCell>{post.author}</TableCell>
-                <TableCell>{post.date}</TableCell>
+                <TableCell>{new Date(post.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <Badge variant={post.status === "published" ? "default" : "secondary"}>
                     {post.status}
