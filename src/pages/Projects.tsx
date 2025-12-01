@@ -120,20 +120,9 @@ const Projects = () => {
                       <CardDescription className="text-sm">{project.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Impact:</span>
-                          <span className="font-semibold">{project.impact}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Duration:</span>
-                          <span className="font-semibold">{project.duration}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Funding:</span>
-                          <span className="font-semibold">{project.funding}</span>
-                        </div>
-                      </div>
+                      <Button className="w-full gap-2">
+                        Learn More <ArrowRight className="w-4 h-4" />
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
@@ -156,24 +145,10 @@ const Projects = () => {
                     <CardHeader>
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="secondary">{project.category}</Badge>
-                        <Calendar className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">{project.duration}</span>
                       </div>
                       <CardTitle className="text-xl">{project.title}</CardTitle>
                       <CardDescription>{project.description}</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Impact Achieved</h4>
-                          <p className="text-sm text-muted-foreground">{project.impact}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Key Outcomes</h4>
-                          <p className="text-sm text-muted-foreground">{project.outcomes}</p>
-                        </div>
-                      </div>
-                    </CardContent>
                   </Card>
                 ))}
               </div>
@@ -181,68 +156,33 @@ const Projects = () => {
 
             {/* Research Grants */}
             <TabsContent value="research" className="space-y-8">
-              <div className="max-w-4xl mx-auto space-y-6">
-                {researchGrants.map((grant) => (
-                  <Card key={grant.title}>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {projects.filter(p => p.category.toLowerCase().includes('research')).map((project) => (
+                  <Card key={project.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={project.image} 
+                        alt={project.title}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                      <Badge className="absolute top-4 right-4 bg-primary">{project.status}</Badge>
+                    </div>
                     <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Microscope className="w-5 h-5 text-primary" />
-                            <Badge variant={grant.status === "Completed" ? "default" : "secondary"}>
-                              {grant.status}
-                            </Badge>
-                          </div>
-                          <CardTitle className="text-2xl mb-2">{grant.title}</CardTitle>
-                          <CardDescription className="text-base">{grant.institution}</CardDescription>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-primary">{grant.amount}</div>
-                          <div className="text-sm text-muted-foreground">{grant.duration}</div>
-                        </div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Microscope className="w-4 h-4 text-primary" />
+                        <Badge variant="secondary">{project.category}</Badge>
                       </div>
+                      <CardTitle className="text-xl">{project.title}</CardTitle>
+                      <CardDescription className="text-sm">{project.description}</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground mb-4">{grant.description}</p>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-semibold">Research Progress</span>
-                          <span className="text-sm font-semibold">{grant.progress}%</span>
-                        </div>
-                        <div className="w-full bg-secondary rounded-full h-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${grant.progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
                   </Card>
                 ))}
               </div>
-
-              <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Total Research Investment</CardTitle>
-                  <CardDescription>Supporting groundbreaking cancer research initiatives</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div>
-                      <div className="text-3xl font-bold text-primary">$425K</div>
-                      <div className="text-sm text-muted-foreground">Currently Funded</div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-primary">6</div>
-                      <div className="text-sm text-muted-foreground">Research Partnerships</div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-primary">$1.2M</div>
-                      <div className="text-sm text-muted-foreground">Total Since 2018</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {projects.filter(p => p.category.toLowerCase().includes('research')).length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No research projects available at this time.</p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
