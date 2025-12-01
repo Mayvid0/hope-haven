@@ -14,58 +14,50 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ImageUpload } from "./ImageUpload";
 
-interface BlogPost {
+interface Project {
   id: string;
   title: string;
-  excerpt: string;
-  content: string;
+  description: string;
   category: string;
-  author: string;
   image: string | null;
-  created_at: string;
-  status: "published" | "draft";
+  status: string;
 }
 
-const BlogManagement = () => {
+const ProjectsManagement = () => {
   const { toast } = useToast();
   const { isAdmin } = useAuth();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState({
     title: "",
-    excerpt: "",
-    content: "",
-    category: "survivor-stories",
-    author: "",
+    description: "",
+    category: "support",
     image: "",
-    status: "draft" as "published" | "draft"
+    status: "active"
   });
 
   useEffect(() => {
     if (isAdmin) {
-      fetchPosts();
+      fetchProjects();
     }
   }, [isAdmin]);
 
-  const fetchPosts = async () => {
+  const fetchProjects = async () => {
     try {
       const { data, error } = await supabase
-        .from('blog_posts')
+        .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts((data || []).map(post => ({
-        ...post,
-        status: post.status as "published" | "draft"
-      })));
+      setProjects(data || []);
     } catch (error: any) {
-      console.error('Error fetching posts:', error);
+      console.error('Error fetching projects:', error);
       toast({
         title: "Error",
-        description: "Failed to load blog posts",
+        description: "Failed to load projects",
         variant: "destructive",
       });
     } finally {
@@ -77,71 +69,63 @@ const BlogManagement = () => {
     e.preventDefault();
     
     try {
-      if (editingPost) {
+      if (editingProject) {
         const { error } = await supabase
-          .from('blog_posts')
+          .from('projects')
           .update({
             title: formData.title,
-            excerpt: formData.excerpt,
-            content: formData.content,
+            description: formData.description,
             category: formData.category,
-            author: formData.author,
             image: formData.image || null,
             status: formData.status,
           })
-          .eq('id', editingPost.id);
+          .eq('id', editingProject.id);
 
         if (error) throw error;
-        toast({ title: "Post updated successfully" });
+        toast({ title: "Project updated successfully" });
       } else {
         const { error } = await supabase
-          .from('blog_posts')
+          .from('projects')
           .insert({
             title: formData.title,
-            excerpt: formData.excerpt,
-            content: formData.content,
+            description: formData.description,
             category: formData.category,
-            author: formData.author,
             image: formData.image || null,
             status: formData.status,
           });
 
         if (error) throw error;
-        toast({ title: "Post created successfully" });
+        toast({ title: "Project created successfully" });
       }
       
       setIsDialogOpen(false);
-      setEditingPost(null);
+      setEditingProject(null);
       setFormData({
         title: "",
-        excerpt: "",
-        content: "",
-        category: "survivor-stories",
-        author: "",
+        description: "",
+        category: "support",
         image: "",
-        status: "draft"
+        status: "active"
       });
-      fetchPosts();
+      fetchProjects();
     } catch (error: any) {
-      console.error('Error saving post:', error);
+      console.error('Error saving project:', error);
       toast({
         title: "Error",
-        description: "Failed to save blog post",
+        description: "Failed to save project",
         variant: "destructive",
       });
     }
   };
 
-  const handleEdit = (post: BlogPost) => {
-    setEditingPost(post);
+  const handleEdit = (project: Project) => {
+    setEditingProject(project);
     setFormData({
-      title: post.title,
-      excerpt: post.excerpt,
-      content: post.content,
-      category: post.category,
-      author: post.author,
-      image: post.image || "",
-      status: post.status
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      image: project.image || "",
+      status: project.status
     });
     setIsDialogOpen(true);
   };
@@ -149,18 +133,18 @@ const BlogManagement = () => {
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('blog_posts')
+        .from('projects')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      toast({ title: "Post deleted successfully" });
-      fetchPosts();
+      toast({ title: "Project deleted successfully" });
+      fetchProjects();
     } catch (error: any) {
-      console.error('Error deleting post:', error);
+      console.error('Error deleting project:', error);
       toast({
         title: "Error",
-        description: "Failed to delete blog post",
+        description: "Failed to delete project",
         variant: "destructive",
       });
     }
@@ -182,7 +166,7 @@ const BlogManagement = () => {
     return (
       <Card>
         <CardContent className="py-8">
-          <p className="text-center text-muted-foreground">Loading blog posts...</p>
+          <p className="text-center text-muted-foreground">Loading projects...</p>
         </CardContent>
       </Card>
     );
@@ -191,32 +175,30 @@ const BlogManagement = () => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Manage Blog Posts</CardTitle>
+        <CardTitle>Manage Projects</CardTitle>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
-              setEditingPost(null);
+              setEditingProject(null);
               setFormData({
                 title: "",
-                excerpt: "",
-                content: "",
-                category: "survivor-stories",
-                author: "",
+                description: "",
+                category: "support",
                 image: "",
-                status: "draft"
+                status: "active"
               });
             }}>
               <Plus className="mr-2 h-4 w-4" />
-              New Post
+              New Project
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editingPost ? "Edit Post" : "Create New Post"}</DialogTitle>
+              <DialogTitle>{editingProject ? "Edit Project" : "Create New Project"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">Project Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
@@ -225,34 +207,18 @@ const BlogManagement = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="excerpt">Excerpt</Label>
+                <Label htmlFor="description">Description *</Label>
                 <Textarea
-                  id="excerpt"
-                  value={formData.excerpt}
-                  onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                  rows={2}
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={4}
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="content">Full Content</Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  rows={8}
-                  required
-                />
-              </div>
-              <ImageUpload
-                currentImage={formData.image}
-                onImageUploaded={(url) => setFormData({ ...formData, image: url })}
-                folder="blog-posts"
-                label="Featured Image"
-              />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">Category *</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => setFormData({ ...formData, category: value })}
@@ -261,46 +227,43 @@ const BlogManagement = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="survivor-stories">Survivor Stories</SelectItem>
-                      <SelectItem value="medical-insights">Medical Insights</SelectItem>
-                      <SelectItem value="research-updates">Research Updates</SelectItem>
-                      <SelectItem value="prevention-tips">Prevention Tips</SelectItem>
-                      <SelectItem value="treatment-options">Treatment Options</SelectItem>
-                      <SelectItem value="community-events">Community Events</SelectItem>
+                      <SelectItem value="support">Patient Support</SelectItem>
+                      <SelectItem value="research">Research</SelectItem>
+                      <SelectItem value="awareness">Awareness</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="wellness">Wellness Programs</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="author">Author</Label>
-                  <Input
-                    id="author"
-                    value={formData.author}
-                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    required
-                  />
+                  <Label htmlFor="status">Status *</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="planned">Planned</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value: "published" | "draft") => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <ImageUpload
+                currentImage={formData.image}
+                onImageUploaded={(url) => setFormData({ ...formData, image: url })}
+                folder="projects"
+                label="Project Image"
+              />
               <div className="flex gap-2 justify-end">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit">
-                  {editingPost ? "Update" : "Create"} Post
+                  {editingProject ? "Update" : "Create"} Project
                 </Button>
               </div>
             </form>
@@ -311,28 +274,32 @@ const BlogManagement = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Image</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Author</TableHead>
-              <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {posts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell className="font-medium">{post.title}</TableCell>
+            {projects.map((project) => (
+              <TableRow key={project.id}>
+                <TableCell>
+                  {project.image ? (
+                    <img src={project.image} alt={project.title} className="h-12 w-12 object-cover rounded" />
+                  ) : (
+                    <div className="h-12 w-12 bg-muted rounded" />
+                  )}
+                </TableCell>
+                <TableCell className="font-medium">{project.title}</TableCell>
                 <TableCell>
                   <Badge variant="outline">
-                    {post.category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                    {project.category.charAt(0).toUpperCase() + project.category.slice(1)}
                   </Badge>
                 </TableCell>
-                <TableCell>{post.author}</TableCell>
-                <TableCell>{new Date(post.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Badge variant={post.status === "published" ? "default" : "secondary"}>
-                    {post.status}
+                  <Badge variant={project.status === "active" ? "default" : "secondary"}>
+                    {project.status}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
@@ -340,14 +307,14 @@ const BlogManagement = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleEdit(post)}
+                      onClick={() => handleEdit(project)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDelete(post.id)}
+                      onClick={() => handleDelete(project.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -362,4 +329,4 @@ const BlogManagement = () => {
   );
 };
 
-export default BlogManagement;
+export default ProjectsManagement;

@@ -8,6 +8,8 @@ import BlogManagement from "@/components/admin/BlogManagement";
 import CommentModeration from "@/components/admin/CommentModeration";
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import EventsManagement from "@/components/admin/EventsManagement";
+import TeamManagement from "@/components/admin/TeamManagement";
+import ProjectsManagement from "@/components/admin/ProjectsManagement";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AdminDashboard = () => {
@@ -76,10 +78,12 @@ const AdminDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="posts" className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-4xl grid-cols-6">
             <TabsTrigger value="posts">Blog Posts</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="team">Team</TabsTrigger>
+            <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -93,6 +97,14 @@ const AdminDashboard = () => {
 
           <TabsContent value="events" className="space-y-4">
             <EventsManagement />
+          </TabsContent>
+
+          <TabsContent value="team" className="space-y-4">
+            <TeamManagement />
+          </TabsContent>
+
+          <TabsContent value="projects" className="space-y-4">
+            <ProjectsManagement />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
