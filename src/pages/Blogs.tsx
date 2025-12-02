@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Clock, User } from "lucide-react";
 import blogHero from "@/assets/blog-hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,10 +20,9 @@ interface BlogPost {
   created_at: string;
 }
 
-const categories = ["All", "Survivor Stories", "Medical Insights", "Research Updates", "Prevention Tips"];
+const categories = ["Survivor Stories", "Medical Insights", "Research Updates", "Prevention Tips"];
 
 const Blogs = () => {
-  const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,16 +49,18 @@ const Blogs = () => {
     }
   };
 
-  const filteredPosts = blogPosts.filter((post) => {
-    const matchesCategory = selectedCategory === "All" || post.category === selectedCategory;
-    const matchesSearch =
-      searchQuery === "" ||
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filterByCategory = (category?: string) => {
+    return blogPosts.filter((post) => {
+      const matchesCategory = !category || post.category === category;
+      const matchesSearch =
+        searchQuery === "" ||
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  };
 
-  const featuredPosts = filteredPosts.slice(0, 3);
+  const featuredPosts = blogPosts.slice(0, 3);
 
   if (loading) {
     return (
@@ -102,27 +104,9 @@ const Blogs = () => {
         </div>
       </section>
 
-      {/* Category Filters */}
-      <section className="border-b bg-background sticky top-0 z-20 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-wrap gap-2 justify-center">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category)}
-                className="rounded-full"
-              >
-                {category}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <div className="container mx-auto px-4 py-16">
         {/* Featured Posts */}
-        {selectedCategory === "All" && searchQuery === "" && (
+        {searchQuery === "" && (
           <section className="mb-16">
             <h2 className="text-3xl font-bold mb-8">Featured Articles</h2>
             <div className="grid md:grid-cols-3 gap-8">
@@ -160,71 +144,138 @@ const Blogs = () => {
           </section>
         )}
 
-        {/* All Articles Grid */}
+        {/* Tab-based Category Filters */}
         <section>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">
-              {selectedCategory === "All" ? "Latest Articles" : selectedCategory}
-            </h2>
-            <p className="text-muted-foreground">
-              {filteredPosts.length} {filteredPosts.length === 1 ? "article" : "articles"}
-            </p>
-          </div>
-
-          {filteredPosts.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-xl text-muted-foreground mb-4">
-                No articles found matching your criteria
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedCategory("All");
-                  setSearchQuery("");
-                }}
-              >
-                Clear Filters
-              </Button>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPosts.map((post) => (
-                <Link key={post.id} to={`/blogs/${post.id}`}>
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group animate-fade-in h-full">
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={post.image || blogHero}
-                        alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <Badge className="absolute top-4 left-4">{post.category}</Badge>
-                    </div>
-                    <CardHeader>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {new Date(post.created_at).toLocaleDateString()}
-                      </p>
-                      <h3 className="text-xl font-bold line-clamp-2 group-hover:text-primary transition-colors">
-                        {post.title}
-                      </h3>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground line-clamp-3">{post.excerpt}</p>
-                    </CardContent>
-                    <CardFooter className="flex items-center justify-between text-sm text-muted-foreground border-t pt-4">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4" />
-                        <p className="font-medium text-foreground">{post.author}</p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </Link>
+          <Tabs defaultValue="all" className="w-full">
+            <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-5 mb-8">
+              <TabsTrigger value="all">All</TabsTrigger>
+              {categories.map((category) => (
+                <TabsTrigger key={category} value={category}>
+                  {category.split(' ')[0]}
+                </TabsTrigger>
               ))}
-            </div>
-          )}
+            </TabsList>
+
+            <TabsContent value="all" className="space-y-6">
+              {filterByCategory().length === 0 ? (
+                <div className="text-center py-16">
+                  <p className="text-xl text-muted-foreground mb-4">
+                    No articles found
+                  </p>
+                  <Button variant="outline" onClick={() => setSearchQuery("")}>
+                    Clear Search
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold">Latest Articles</h2>
+                    <p className="text-muted-foreground">
+                      {filterByCategory().length} {filterByCategory().length === 1 ? "article" : "articles"}
+                    </p>
+                  </div>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filterByCategory().map((post) => (
+                      <Link key={post.id} to={`/blogs/${post.id}`}>
+                        <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group animate-fade-in h-full">
+                          <div className="relative h-48 overflow-hidden">
+                            <img
+                              src={post.image || blogHero}
+                              alt={post.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <Badge className="absolute top-4 left-4">{post.category}</Badge>
+                          </div>
+                          <CardHeader>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </p>
+                            <h3 className="text-xl font-bold line-clamp-2 group-hover:text-primary transition-colors">
+                              {post.title}
+                            </h3>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-muted-foreground line-clamp-3">{post.excerpt}</p>
+                          </CardContent>
+                          <CardFooter className="flex items-center justify-between text-sm text-muted-foreground border-t pt-4">
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4" />
+                              <p className="font-medium text-foreground">{post.author}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+
+            {categories.map((category) => (
+              <TabsContent key={category} value={category} className="space-y-6">
+                {filterByCategory(category).length === 0 ? (
+                  <div className="text-center py-16">
+                    <p className="text-xl text-muted-foreground mb-4">
+                      No {category.toLowerCase()} found
+                    </p>
+                    <Button variant="outline" onClick={() => setSearchQuery("")}>
+                      Clear Search
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-3xl font-bold">{category}</h2>
+                      <p className="text-muted-foreground">
+                        {filterByCategory(category).length} {filterByCategory(category).length === 1 ? "article" : "articles"}
+                      </p>
+                    </div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {filterByCategory(category).map((post) => (
+                        <Link key={post.id} to={`/blogs/${post.id}`}>
+                          <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group animate-fade-in h-full">
+                            <div className="relative h-48 overflow-hidden">
+                              <img
+                                src={post.image || blogHero}
+                                alt={post.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              <Badge className="absolute top-4 left-4">{post.category}</Badge>
+                            </div>
+                            <CardHeader>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                {new Date(post.created_at).toLocaleDateString()}
+                              </p>
+                              <h3 className="text-xl font-bold line-clamp-2 group-hover:text-primary transition-colors">
+                                {post.title}
+                              </h3>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-muted-foreground line-clamp-3">{post.excerpt}</p>
+                            </CardContent>
+                            <CardFooter className="flex items-center justify-between text-sm text-muted-foreground border-t pt-4">
+                              <div className="flex items-center gap-2">
+                                <User className="w-4 h-4" />
+                                <p className="font-medium text-foreground">{post.author}</p>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                              </div>
+                            </CardFooter>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
         </section>
 
         {/* Newsletter CTA */}
