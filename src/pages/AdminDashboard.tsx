@@ -12,6 +12,7 @@ import TeamManagement from "@/components/admin/TeamManagement";
 import ProjectsManagement from "@/components/admin/ProjectsManagement";
 import TestimoniesManagement from "@/components/admin/TestimoniesManagement";
 import RSVPManagement from "@/components/admin/RSVPManagement";
+import VolunteerApplicationsManagement from "@/components/admin/VolunteerApplicationsManagement";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AdminDashboard = () => {
@@ -80,7 +81,7 @@ const AdminDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="posts">Blogs</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
@@ -89,6 +90,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="team">Team</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="testimonies">Testimonies</TabsTrigger>
+            <TabsTrigger value="volunteers">Volunteers</TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="space-y-4">
@@ -121,6 +123,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="testimonies" className="space-y-4">
             <TestimoniesManagement />
+          </TabsContent>
+
+          <TabsContent value="volunteers" className="space-y-4">
+            <VolunteerApplicationsManagement />
           </TabsContent>
         </Tabs>
       </div>
