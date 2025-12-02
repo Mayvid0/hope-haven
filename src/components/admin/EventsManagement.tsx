@@ -12,6 +12,7 @@ import { Plus, Pencil, Trash2, Users, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { ImageUpload } from "./ImageUpload";
 
 interface Event {
   id: string;
@@ -23,6 +24,7 @@ interface Event {
   type: "awareness" | "workshop" | "fundraising";
   capacity: number;
   registered: number;
+  image: string | null;
 }
 
 const EventsManagement = () => {
@@ -39,7 +41,8 @@ const EventsManagement = () => {
     time: "",
     location: "",
     type: "awareness" as "awareness" | "workshop" | "fundraising",
-    capacity: 50
+    capacity: 50,
+    image: ""
   });
 
   useEffect(() => {
@@ -84,6 +87,7 @@ const EventsManagement = () => {
             location: formData.location,
             type: formData.type,
             capacity: formData.capacity,
+            image: formData.image || null,
           })
           .eq('id', editingEvent.id);
 
@@ -116,7 +120,8 @@ const EventsManagement = () => {
         time: "",
         location: "",
         type: "awareness",
-        capacity: 50
+        capacity: 50,
+        image: ""
       });
       fetchEvents();
     } catch (error) {
@@ -138,7 +143,8 @@ const EventsManagement = () => {
       time: event.time,
       location: event.location,
       type: event.type,
-      capacity: event.capacity
+      capacity: event.capacity,
+      image: event.image || ""
     });
     setIsDialogOpen(true);
   };
@@ -209,7 +215,8 @@ const EventsManagement = () => {
                 time: "",
                 location: "",
                 type: "awareness",
-                capacity: 50
+                capacity: 50,
+                image: ""
               });
             }}>
               <Plus className="mr-2 h-4 w-4" />

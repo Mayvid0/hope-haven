@@ -10,6 +10,8 @@ import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import EventsManagement from "@/components/admin/EventsManagement";
 import TeamManagement from "@/components/admin/TeamManagement";
 import ProjectsManagement from "@/components/admin/ProjectsManagement";
+import TestimoniesManagement from "@/components/admin/TestimoniesManagement";
+import RSVPManagement from "@/components/admin/RSVPManagement";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AdminDashboard = () => {
@@ -77,14 +79,16 @@ const AdminDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="posts" className="space-y-6">
-          <TabsList className="grid w-full max-w-4xl grid-cols-6">
-            <TabsTrigger value="posts">Blog Posts</TabsTrigger>
+        <Tabs defaultValue="analytics" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="posts">Blogs</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="rsvps">RSVPs</TabsTrigger>
             <TabsTrigger value="team">Team</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="testimonies">Testimonies</TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="space-y-4">
@@ -109,6 +113,14 @@ const AdminDashboard = () => {
 
           <TabsContent value="analytics" className="space-y-4">
             <AnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="rsvps" className="space-y-4">
+            <RSVPManagement />
+          </TabsContent>
+
+          <TabsContent value="testimonies" className="space-y-4">
+            <TestimoniesManagement />
           </TabsContent>
         </Tabs>
       </div>
