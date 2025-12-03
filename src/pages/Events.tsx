@@ -340,6 +340,12 @@ const Events = () => {
             <Button type="submit" className="w-full" disabled={submitting}>
               {submitting ? "Registering..." : "Confirm Registration"}
             </Button>
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Want to help out?{" "}
+              <a href="/volunteer" className="text-primary hover:underline font-medium">
+                Sign up to volunteer
+              </a>
+            </p>
           </form>
         </DialogContent>
       </Dialog>
