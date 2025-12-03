@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -27,7 +27,7 @@ interface Event {
   type: "awareness" | "workshop" | "fundraising";
   capacity: number;
   registered: number;
-  image: string;
+  image: string | null;
 }
 
 const Events = () => {
@@ -37,6 +37,7 @@ const Events = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -61,6 +62,12 @@ const Events = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openRSVPDialog = (event: Event) => {
+    setSelectedEvent(event);
+    setRsvpData({ name: "", email: "", phone: "" });
+    setDialogOpen(true);
   };
 
   const handleRSVP = async (e: React.FormEvent) => {
@@ -111,6 +118,7 @@ const Events = () => {
         description: `You've successfully registered for ${selectedEvent.title}. Check your email for details.`,
       });
 
+      setDialogOpen(false);
       setSelectedEvent(null);
       setRsvpData({ name: "", email: "", phone: "" });
       fetchEvents(); // Refresh events to update registered count
@@ -143,11 +151,17 @@ const Events = () => {
   const EventCard = ({ event }: { event: Event }) => (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="aspect-video bg-muted relative">
-        <img 
-          src={event.image} 
-          alt={event.title}
-          className="w-full h-full object-cover"
-        />
+        {event.image ? (
+          <img 
+            src={event.image} 
+            alt={event.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <Calendar className="h-12 w-12 text-muted-foreground" />
+          </div>
+        )}
         <Badge className={`absolute top-4 right-4 ${getEventTypeColor(event.type)} text-white`}>
           {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
         </Badge>
@@ -179,67 +193,16 @@ const Events = () => {
           <div className="h-2 bg-muted rounded-full overflow-hidden mb-2">
             <div 
               className="h-full bg-primary transition-all"
-              style={{ width: `${(event.registered / event.capacity) * 100}%` }}
+              style={{ width: `${Math.min((event.registered / event.capacity) * 100, 100)}%` }}
             />
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                className="w-full" 
-                onClick={() => setSelectedEvent(event)}
-                disabled={event.registered >= event.capacity}
-              >
-                {event.registered >= event.capacity ? "Event Full" : "Register Now"}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Register for {event.title}</DialogTitle>
-                <DialogDescription>
-                  Fill out the form below to reserve your spot
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleRSVP} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name *</Label>
-                  <Input
-                    id="name"
-                    value={rsvpData.name}
-                    onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={rsvpData.email}
-                    onChange={(e) => setRsvpData({ ...rsvpData, email: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={rsvpData.phone}
-                    onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="bg-muted p-4 rounded-lg space-y-1 text-sm">
-                  <p className="font-medium">Event Details:</p>
-                  <p className="text-muted-foreground">{new Date(event.date).toLocaleDateString()} at {event.time}</p>
-                  <p className="text-muted-foreground">{event.location}</p>
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? "Registering..." : "Confirm Registration"}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            className="w-full" 
+            onClick={() => openRSVPDialog(event)}
+            disabled={event.registered >= event.capacity}
+          >
+            {event.registered >= event.capacity ? "Event Full" : "Register Now"}
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -327,6 +290,59 @@ const Events = () => {
           </Tabs>
         </div>
       </section>
+
+      {/* RSVP Dialog - Controlled and outside EventCard */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register for {selectedEvent?.title}</DialogTitle>
+            <DialogDescription>
+              Fill out the form below to reserve your spot
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleRSVP} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="rsvp-name">Full Name *</Label>
+              <Input
+                id="rsvp-name"
+                value={rsvpData.name}
+                onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rsvp-email">Email *</Label>
+              <Input
+                id="rsvp-email"
+                type="email"
+                value={rsvpData.email}
+                onChange={(e) => setRsvpData({ ...rsvpData, email: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rsvp-phone">Phone Number *</Label>
+              <Input
+                id="rsvp-phone"
+                type="tel"
+                value={rsvpData.phone}
+                onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })}
+                required
+              />
+            </div>
+            {selectedEvent && (
+              <div className="bg-muted p-4 rounded-lg space-y-1 text-sm">
+                <p className="font-medium">Event Details:</p>
+                <p className="text-muted-foreground">{new Date(selectedEvent.date).toLocaleDateString()} at {selectedEvent.time}</p>
+                <p className="text-muted-foreground">{selectedEvent.location}</p>
+              </div>
+            )}
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "Registering..." : "Confirm Registration"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
