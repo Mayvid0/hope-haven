@@ -105,6 +105,7 @@ const EventsManagement = () => {
             type: formData.type,
             capacity: formData.capacity,
             registered: 0,
+            image: formData.image || null,
           });
 
         if (error) throw error;
@@ -309,6 +310,12 @@ const EventsManagement = () => {
                   />
                 </div>
               </div>
+              <ImageUpload
+                currentImage={formData.image}
+                onImageUploaded={(url) => setFormData({ ...formData, image: url })}
+                folder="events"
+                label="Event Image"
+              />
               <div className="flex gap-2 justify-end">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
