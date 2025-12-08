@@ -13,6 +13,7 @@ import ProjectsManagement from "@/components/admin/ProjectsManagement";
 import TestimoniesManagement from "@/components/admin/TestimoniesManagement";
 import RSVPManagement from "@/components/admin/RSVPManagement";
 import VolunteerApplicationsManagement from "@/components/admin/VolunteerApplicationsManagement";
+import { GalleryManagement } from "@/components/admin/GalleryManagement";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AdminDashboard = () => {
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="posts">Blogs</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
@@ -91,6 +92,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="testimonies">Testimonies</TabsTrigger>
             <TabsTrigger value="volunteers">Volunteers</TabsTrigger>
+            <TabsTrigger value="gallery">Gallery</TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="space-y-4">
@@ -127,6 +129,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="volunteers" className="space-y-4">
             <VolunteerApplicationsManagement />
+          </TabsContent>
+
+          <TabsContent value="gallery" className="space-y-4">
+            <GalleryManagement />
           </TabsContent>
         </Tabs>
       </div>

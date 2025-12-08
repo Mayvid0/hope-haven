@@ -133,6 +133,30 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          tag: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          tag: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          tag?: string
+          title?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

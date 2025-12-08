@@ -13,6 +13,7 @@ const navigationLinks = [
   { name: "Projects", path: "/projects" },
   { name: "Awareness", path: "/awareness" },
   { name: "Events", path: "/events" },
+  { name: "Gallery", path: "/gallery" },
   { name: "Blogs", path: "/blogs" },
   { name: "Testimony", path: "/testimony" },
   { name: "Contact", path: "/contact" },

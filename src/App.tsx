@@ -18,6 +18,7 @@ import BlogPost from "./pages/BlogPost";
 import Donate from "./pages/Donate";
 import Volunteer from "./pages/Volunteer";
 import Events from "./pages/Events";
+import Gallery from "./pages/Gallery";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/donate" element={<Donate />} />
               <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
