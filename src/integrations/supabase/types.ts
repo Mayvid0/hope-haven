@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      awareness_resources: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_type: string
+          file_url: string
+          id: string
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_type: string
+          file_url: string
+          id?: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string
