@@ -281,6 +281,7 @@ export type Database = {
           id: string
           image: string | null
           name: string
+          status: string
           story: string
         }
         Insert: {
@@ -290,6 +291,7 @@ export type Database = {
           id?: string
           image?: string | null
           name: string
+          status?: string
           story: string
         }
         Update: {
@@ -299,6 +301,7 @@ export type Database = {
           id?: string
           image?: string | null
           name?: string
+          status?: string
           story?: string
         }
         Relationships: []

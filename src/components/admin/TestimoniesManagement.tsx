@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +22,7 @@ interface Testimony {
   category: string;
   cancer_type: string;
   image: string | null;
+  status: string;
 }
 
 const TestimoniesManagement = () => {
@@ -28,6 +30,7 @@ const TestimoniesManagement = () => {
   const { isAdmin } = useAuth();
   const [testimonies, setTestimonies] = useState<Testimony[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("pending");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTestimony, setEditingTestimony] = useState<Testimony | null>(null);
   const [formData, setFormData] = useState({
@@ -92,6 +95,7 @@ const TestimoniesManagement = () => {
             category: formData.category,
             cancer_type: formData.cancer_type,
             image: formData.image || null,
+            status: 'approved',
           });
 
         if (error) throw error;
@@ -149,6 +153,28 @@ const TestimoniesManagement = () => {
       });
     }
   };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('testimonies')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: `Testimony ${status === 'approved' ? 'approved' : 'rejected'} successfully` });
+      fetchTestimonies();
+    } catch (error: any) {
+      console.error('Error updating testimony status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update testimony status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredTestimonies = testimonies.filter(t => t.status === activeTab);
 
   if (!isAdmin) {
     return (
@@ -263,55 +289,101 @@ const TestimoniesManagement = () => {
         </Dialog>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Image</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Cancer Type</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {testimonies.map((testimony) => (
-              <TableRow key={testimony.id}>
-                <TableCell>
-                  {testimony.image ? (
-                    <img src={testimony.image} alt={testimony.name} className="h-12 w-12 object-cover rounded" />
-                  ) : (
-                    <div className="h-12 w-12 bg-muted rounded" />
-                  )}
-                </TableCell>
-                <TableCell className="font-medium">{testimony.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {testimony.category.charAt(0).toUpperCase() + testimony.category.slice(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell>{testimony.cancer_type}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEdit(testimony)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(testimony.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="pending">
+              Pending ({testimonies.filter(t => t.status === 'pending').length})
+            </TabsTrigger>
+            <TabsTrigger value="approved">
+              Approved ({testimonies.filter(t => t.status === 'approved').length})
+            </TabsTrigger>
+            <TabsTrigger value="rejected">
+              Rejected ({testimonies.filter(t => t.status === 'rejected').length})
+            </TabsTrigger>
+          </TabsList>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Image</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Cancer Type</TableHead>
+                <TableHead>Story</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredTestimonies.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    No {activeTab} testimonies
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredTestimonies.map((testimony) => (
+                  <TableRow key={testimony.id}>
+                    <TableCell>
+                      {testimony.image ? (
+                        <img src={testimony.image} alt={testimony.name} className="h-12 w-12 object-cover rounded" />
+                      ) : (
+                        <div className="h-12 w-12 bg-muted rounded" />
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium">{testimony.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {testimony.category.charAt(0).toUpperCase() + testimony.category.slice(1)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{testimony.cancer_type}</TableCell>
+                    <TableCell className="max-w-xs truncate">{testimony.story}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        {activeTab === 'pending' && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-green-600 hover:text-green-700 hover:bg-green-100"
+                              onClick={() => handleStatusChange(testimony.id, 'approved')}
+                              title="Approve"
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-100"
+                              onClick={() => handleStatusChange(testimony.id, 'rejected')}
+                              title="Reject"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(testimony)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(testimony.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </Tabs>
       </CardContent>
     </Card>
   );

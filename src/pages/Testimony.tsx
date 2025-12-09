@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import TestimonySubmissionForm from "@/components/TestimonySubmissionForm";
 
 interface Testimony {
   id: string;
@@ -40,6 +41,7 @@ const Testimony = () => {
       const { data, error } = await supabase
         .from('testimonies')
         .select('*')
+        .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -194,9 +196,7 @@ const Testimony = () => {
             <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
               Your journey can inspire others facing similar challenges. We'd be honored to share your story of hope, courage, and resilience.
             </p>
-            <Button asChild size="lg">
-              <a href="/contact">Submit Your Story</a>
-            </Button>
+            <TestimonySubmissionForm />
           </Card>
         </section>
       </div>
