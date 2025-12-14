@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      awareness_resources: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_type: string
+          file_url: string
+          id: string
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_type: string
+          file_url: string
+          id?: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string
@@ -23,6 +53,8 @@ export type Database = {
           excerpt: string
           id: string
           image: string | null
+          images: string[] | null
+          linked_event_id: string | null
           status: string
           title: string
           updated_at: string | null
@@ -35,6 +67,8 @@ export type Database = {
           excerpt: string
           id?: string
           image?: string | null
+          images?: string[] | null
+          linked_event_id?: string | null
           status?: string
           title: string
           updated_at?: string | null
@@ -47,11 +81,21 @@ export type Database = {
           excerpt?: string
           id?: string
           image?: string | null
+          images?: string[] | null
+          linked_event_id?: string | null
           status?: string
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_linked_event_id_fkey"
+            columns: ["linked_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
@@ -281,6 +325,7 @@ export type Database = {
           id: string
           image: string | null
           name: string
+          status: string
           story: string
         }
         Insert: {
@@ -290,6 +335,7 @@ export type Database = {
           id?: string
           image?: string | null
           name: string
+          status?: string
           story: string
         }
         Update: {
@@ -299,6 +345,7 @@ export type Database = {
           id?: string
           image?: string | null
           name?: string
+          status?: string
           story?: string
         }
         Relationships: []

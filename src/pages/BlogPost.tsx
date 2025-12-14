@@ -17,6 +17,7 @@ interface BlogPost {
   excerpt: string;
   category: string;
   image: string | null;
+  images: string[] | null;
   author: string;
   content: string;
   created_at: string;
@@ -59,13 +60,14 @@ const BlogPost = () => {
       if (error) throw error;
       setPost(data);
 
-      // Fetch related posts
+      // Fetch related posts (excluding event recaps)
       if (data) {
         const { data: related } = await supabase
           .from('blog_posts')
           .select('*')
           .eq('category', data.category)
           .eq('status', 'published')
+          .is('linked_event_id', null)
           .neq('id', id)
           .limit(3);
         
@@ -153,6 +155,11 @@ const BlogPost = () => {
     );
   }
 
+  const allImages = [
+    ...(post.image ? [post.image] : []),
+    ...(post.images || []),
+  ];
+
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -177,13 +184,15 @@ const BlogPost = () => {
           </div>
 
           {/* Hero Image */}
-          <div className="relative h-[500px] overflow-hidden rounded-lg mb-8">
-            <img
-              src={post.image || blogHero}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          {allImages.length > 0 && (
+            <div className="relative h-[500px] overflow-hidden rounded-lg mb-8">
+              <img
+                src={allImages[0]}
+                alt={post.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
 
           <div className="flex items-center gap-4 mb-8 pb-8 border-b">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -202,6 +211,27 @@ const BlogPost = () => {
               {post.content}
             </div>
           </div>
+
+          {/* Additional Images Gallery */}
+          {allImages.length > 1 && (
+            <div className="mb-12">
+              <h3 className="text-2xl font-bold mb-6">Gallery</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {allImages.slice(1).map((image, index) => (
+                  <div
+                    key={index}
+                    className="relative aspect-video overflow-hidden rounded-lg"
+                  >
+                    <img
+                      src={image}
+                      alt={`Image ${index + 2}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Social Share Buttons */}
           <div className="flex items-center gap-4 mb-12 pb-12 border-b">
@@ -301,28 +331,28 @@ const BlogPost = () => {
             <div>
               <h3 className="text-2xl font-bold mb-6">Related Articles</h3>
               <div className="grid md:grid-cols-3 gap-6">
-                {relatedPosts.map((post) => (
-                  <Link key={post.id} to={`/blogs/${post.id}`}>
+                {relatedPosts.map((relatedPost) => (
+                  <Link key={relatedPost.id} to={`/blogs/${relatedPost.id}`}>
                     <Card className="group cursor-pointer hover:shadow-lg transition-shadow">
                       <div className="relative h-48 overflow-hidden">
                         <img
-                          src={post.image || blogHero}
-                          alt={post.title}
+                          src={relatedPost.image || blogHero}
+                          alt={relatedPost.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        <Badge className="absolute top-4 left-4">{post.category}</Badge>
+                        <Badge className="absolute top-4 left-4">{relatedPost.category}</Badge>
                       </div>
                       <CardHeader>
                         <h3 className="font-bold line-clamp-2 group-hover:text-primary transition-colors">
-                          {post.title}
+                          {relatedPost.title}
                         </h3>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{relatedPost.excerpt}</p>
                       </CardContent>
                       <CardFooter className="text-sm text-muted-foreground">
                         <Clock className="w-4 h-4 mr-1" />
-                        {new Date(post.created_at).toLocaleDateString()}
+                        {new Date(relatedPost.created_at).toLocaleDateString()}
                       </CardFooter>
                     </Card>
                   </Link>

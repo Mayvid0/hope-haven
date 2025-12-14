@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ImageUpload } from "./ImageUpload";
+import { MultiImageUpload } from "./MultiImageUpload";
 
 interface BlogPost {
   id: string;
@@ -22,14 +23,23 @@ interface BlogPost {
   category: string;
   author: string;
   image: string | null;
+  images: string[] | null;
+  linked_event_id: string | null;
   created_at: string;
   status: "published" | "draft";
+}
+
+interface Event {
+  id: string;
+  title: string;
+  date: string;
 }
 
 const BlogManagement = () => {
   const { toast } = useToast();
   const { isAdmin } = useAuth();
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
@@ -40,12 +50,15 @@ const BlogManagement = () => {
     category: "survivor-stories",
     author: "",
     image: "",
+    images: [] as string[],
+    linked_event_id: "",
     status: "draft" as "published" | "draft"
   });
 
   useEffect(() => {
     if (isAdmin) {
       fetchPosts();
+      fetchEvents();
     }
   }, [isAdmin]);
 
@@ -73,22 +86,42 @@ const BlogManagement = () => {
     }
   };
 
+  const fetchEvents = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, title, date')
+        .lt('date', today)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      const postData = {
+        title: formData.title,
+        excerpt: formData.excerpt,
+        content: formData.content,
+        category: formData.category,
+        author: formData.author,
+        image: formData.image || null,
+        images: formData.images.length > 0 ? formData.images : null,
+        linked_event_id: formData.linked_event_id || null,
+        status: formData.status,
+      };
+
       if (editingPost) {
         const { error } = await supabase
           .from('blog_posts')
-          .update({
-            title: formData.title,
-            excerpt: formData.excerpt,
-            content: formData.content,
-            category: formData.category,
-            author: formData.author,
-            image: formData.image || null,
-            status: formData.status,
-          })
+          .update(postData)
           .eq('id', editingPost.id);
 
         if (error) throw error;
@@ -96,15 +129,7 @@ const BlogManagement = () => {
       } else {
         const { error } = await supabase
           .from('blog_posts')
-          .insert({
-            title: formData.title,
-            excerpt: formData.excerpt,
-            content: formData.content,
-            category: formData.category,
-            author: formData.author,
-            image: formData.image || null,
-            status: formData.status,
-          });
+          .insert(postData);
 
         if (error) throw error;
         toast({ title: "Post created successfully" });
@@ -112,15 +137,7 @@ const BlogManagement = () => {
       
       setIsDialogOpen(false);
       setEditingPost(null);
-      setFormData({
-        title: "",
-        excerpt: "",
-        content: "",
-        category: "survivor-stories",
-        author: "",
-        image: "",
-        status: "draft"
-      });
+      resetForm();
       fetchPosts();
     } catch (error: any) {
       console.error('Error saving post:', error);
@@ -132,6 +149,20 @@ const BlogManagement = () => {
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      excerpt: "",
+      content: "",
+      category: "survivor-stories",
+      author: "",
+      image: "",
+      images: [],
+      linked_event_id: "",
+      status: "draft"
+    });
+  };
+
   const handleEdit = (post: BlogPost) => {
     setEditingPost(post);
     setFormData({
@@ -141,6 +172,8 @@ const BlogManagement = () => {
       category: post.category,
       author: post.author,
       image: post.image || "",
+      images: post.images || [],
+      linked_event_id: post.linked_event_id || "",
       status: post.status
     });
     setIsDialogOpen(true);
@@ -196,15 +229,7 @@ const BlogManagement = () => {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingPost(null);
-              setFormData({
-                title: "",
-                excerpt: "",
-                content: "",
-                category: "survivor-stories",
-                author: "",
-                image: "",
-                status: "draft"
-              });
+              resetForm();
             }}>
               <Plus className="mr-2 h-4 w-4" />
               New Post
@@ -240,7 +265,8 @@ const BlogManagement = () => {
                   id="content"
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  rows={8}
+                  rows={10}
+                  placeholder="Write your content here. Use line breaks for paragraphs."
                   required
                 />
               </div>
@@ -249,6 +275,12 @@ const BlogManagement = () => {
                 onImageUploaded={(url) => setFormData({ ...formData, image: url })}
                 folder="blog-posts"
                 label="Featured Image"
+              />
+              <MultiImageUpload
+                images={formData.images}
+                onImagesChange={(images) => setFormData({ ...formData, images })}
+                folder="blog-posts"
+                label="Additional Images"
               />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -279,6 +311,28 @@ const BlogManagement = () => {
                     required
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="linked_event">Link to Past Event (for Event Recap)</Label>
+                <Select
+                  value={formData.linked_event_id}
+                  onValueChange={(value) => setFormData({ ...formData, linked_event_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="None (regular blog post)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None (regular blog post)</SelectItem>
+                    {events.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        {event.title} ({new Date(event.date).toLocaleDateString()})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  If linked to an event, this post will appear as the event recap and won't show on the blogs page.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
@@ -313,6 +367,7 @@ const BlogManagement = () => {
             <TableRow>
               <TableHead>Title</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Author</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
@@ -326,6 +381,11 @@ const BlogManagement = () => {
                 <TableCell>
                   <Badge variant="outline">
                     {post.category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={post.linked_event_id ? "secondary" : "outline"}>
+                    {post.linked_event_id ? "Event Recap" : "Blog Post"}
                   </Badge>
                 </TableCell>
                 <TableCell>{post.author}</TableCell>

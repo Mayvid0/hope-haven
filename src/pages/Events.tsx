@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, Clock, Users, Tag } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Calendar, MapPin, Clock, Users, Tag, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -30,17 +32,25 @@ interface Event {
   image: string | null;
 }
 
+interface EventRecap {
+  id: string;
+  title: string;
+  linked_event_id: string;
+}
+
 const Events = () => {
   const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [rsvpData, setRsvpData] = useState({ name: "", email: "", phone: "" });
   const [events, setEvents] = useState<Event[]>([]);
+  const [eventRecaps, setEventRecaps] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchEvents();
+    fetchEventRecaps();
   }, []);
 
   const fetchEvents = async () => {
@@ -64,6 +74,28 @@ const Events = () => {
     }
   };
 
+  const fetchEventRecaps = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('id, linked_event_id')
+        .not('linked_event_id', 'is', null)
+        .eq('status', 'published');
+
+      if (error) throw error;
+      
+      const recapMap = new Map<string, string>();
+      data?.forEach((recap) => {
+        if (recap.linked_event_id) {
+          recapMap.set(recap.linked_event_id, recap.id);
+        }
+      });
+      setEventRecaps(recapMap);
+    } catch (error) {
+      console.error('Error fetching event recaps:', error);
+    }
+  };
+
   const openRSVPDialog = (event: Event) => {
     setSelectedEvent(event);
     setRsvpData({ name: "", email: "", phone: "" });
@@ -77,10 +109,8 @@ const Events = () => {
     setSubmitting(true);
 
     try {
-      // Validate input
       rsvpSchema.parse(rsvpData);
 
-      // Insert RSVP into database
       const { error: rsvpError } = await supabase
         .from('rsvps')
         .insert({
@@ -97,7 +127,6 @@ const Events = () => {
         throw rsvpError;
       }
 
-      // Send confirmation email
       const { error: emailError } = await supabase.functions.invoke('send-rsvp-confirmation', {
         body: {
           name: rsvpData.name,
@@ -121,7 +150,7 @@ const Events = () => {
       setDialogOpen(false);
       setSelectedEvent(null);
       setRsvpData({ name: "", email: "", phone: "" });
-      fetchEvents(); // Refresh events to update registered count
+      fetchEvents();
     } catch (error: any) {
       console.error('RSVP error:', error);
       toast({
@@ -134,9 +163,14 @@ const Events = () => {
     }
   };
 
-  const filterEvents = (type?: string) => {
-    if (!type || type === "all") return events;
-    return events.filter(event => event.type === type);
+  const today = new Date().toISOString().split('T')[0];
+  
+  const upcomingEvents = events.filter(event => event.date >= today);
+  const completedEvents = events.filter(event => event.date < today);
+
+  const filterEvents = (eventList: Event[], type?: string) => {
+    if (!type || type === "all") return eventList;
+    return eventList.filter(event => event.type === type);
   };
 
   const getEventTypeColor = (type: string) => {
@@ -148,7 +182,7 @@ const Events = () => {
     }
   };
 
-  const EventCard = ({ event }: { event: Event }) => (
+  const UpcomingEventCard = ({ event }: { event: Event }) => (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="aspect-video bg-muted relative">
         {event.image ? (
@@ -208,25 +242,87 @@ const Events = () => {
     </Card>
   );
 
+  const CompletedEventCard = ({ event }: { event: Event }) => {
+    const recapId = eventRecaps.get(event.id);
+    
+    return (
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <div className="aspect-video bg-muted relative">
+          {event.image ? (
+            <img 
+              src={event.image} 
+              alt={event.title}
+              className="w-full h-full object-cover opacity-90"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <Calendar className="h-12 w-12 text-muted-foreground" />
+            </div>
+          )}
+          <Badge className="absolute top-4 right-4 bg-muted-foreground text-white">
+            Completed
+          </Badge>
+          <Badge className={`absolute top-4 left-4 ${getEventTypeColor(event.type)} text-white`}>
+            {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+          </Badge>
+        </div>
+        <CardHeader>
+          <CardTitle className="line-clamp-2">{event.title}</CardTitle>
+          <CardDescription className="line-clamp-2">{event.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>{new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              <span>{event.location}</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <CheckCircle className="h-4 w-4" />
+              <span>{event.registered} attendees</span>
+            </div>
+          </div>
+          <div className="pt-2">
+            {recapId ? (
+              <Link to={`/events/recap/${recapId}`}>
+                <Button className="w-full" variant="outline">
+                  Learn More
+                </Button>
+              </Link>
+            ) : (
+              <Button className="w-full" variant="outline" disabled>
+                Recap Coming Soon
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-20">
         <div className="container mx-auto px-4 text-center">
           <Tag className="h-12 w-12 mx-auto mb-4" />
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Upcoming Events</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Events</h1>
           <p className="text-xl max-w-2xl mx-auto opacity-90">
             Join us for awareness events, educational workshops, and fundraising activities
           </p>
         </div>
       </section>
 
-      {/* Events Section */}
+      {/* Upcoming Events Section */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-8">Upcoming Events</h2>
           <Tabs defaultValue="all" className="space-y-8">
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-4">
-              <TabsTrigger value="all">All Events</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="awareness">Awareness</TabsTrigger>
               <TabsTrigger value="workshop">Workshops</TabsTrigger>
               <TabsTrigger value="fundraising">Fundraising</TabsTrigger>
@@ -235,12 +331,12 @@ const Events = () => {
             <TabsContent value="all" className="space-y-6">
               {loading ? (
                 <div className="text-center py-12">Loading events...</div>
-              ) : events.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">No events available</div>
+              ) : upcomingEvents.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">No upcoming events available</div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filterEvents().map((event) => (
-                    <EventCard key={event.id} event={event} />
+                  {filterEvents(upcomingEvents).map((event) => (
+                    <UpcomingEventCard key={event.id} event={event} />
                   ))}
                 </div>
               )}
@@ -249,12 +345,12 @@ const Events = () => {
             <TabsContent value="awareness" className="space-y-6">
               {loading ? (
                 <div className="text-center py-12">Loading events...</div>
-              ) : filterEvents("awareness").length === 0 ? (
+              ) : filterEvents(upcomingEvents, "awareness").length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">No awareness events available</div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filterEvents("awareness").map((event) => (
-                    <EventCard key={event.id} event={event} />
+                  {filterEvents(upcomingEvents, "awareness").map((event) => (
+                    <UpcomingEventCard key={event.id} event={event} />
                   ))}
                 </div>
               )}
@@ -263,12 +359,12 @@ const Events = () => {
             <TabsContent value="workshop" className="space-y-6">
               {loading ? (
                 <div className="text-center py-12">Loading events...</div>
-              ) : filterEvents("workshop").length === 0 ? (
+              ) : filterEvents(upcomingEvents, "workshop").length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">No workshop events available</div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filterEvents("workshop").map((event) => (
-                    <EventCard key={event.id} event={event} />
+                  {filterEvents(upcomingEvents, "workshop").map((event) => (
+                    <UpcomingEventCard key={event.id} event={event} />
                   ))}
                 </div>
               )}
@@ -277,12 +373,12 @@ const Events = () => {
             <TabsContent value="fundraising" className="space-y-6">
               {loading ? (
                 <div className="text-center py-12">Loading events...</div>
-              ) : filterEvents("fundraising").length === 0 ? (
+              ) : filterEvents(upcomingEvents, "fundraising").length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">No fundraising events available</div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filterEvents("fundraising").map((event) => (
-                    <EventCard key={event.id} event={event} />
+                  {filterEvents(upcomingEvents, "fundraising").map((event) => (
+                    <UpcomingEventCard key={event.id} event={event} />
                   ))}
                 </div>
               )}
@@ -291,7 +387,22 @@ const Events = () => {
         </div>
       </section>
 
-      {/* RSVP Dialog - Controlled and outside EventCard */}
+      {/* Completed Events Section */}
+      {completedEvents.length > 0 && (
+        <section className="py-16 bg-muted/50">
+          <div className="container mx-auto px-4">
+            <Separator className="mb-8" />
+            <h2 className="text-3xl font-bold mb-8">Past Events</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {completedEvents.map((event) => (
+                <CompletedEventCard key={event.id} event={event} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* RSVP Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>

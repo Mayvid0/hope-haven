@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +24,54 @@ import {
 import heroImg from "@/assets/awareness-hero.jpg";
 import screeningImg from "@/assets/awareness-screening.jpg";
 import educationImg from "@/assets/awareness-education.jpg";
+import { supabase } from "@/integrations/supabase/client";
+
+interface AwarenessResource {
+  id: string;
+  title: string;
+  description: string | null;
+  file_url: string;
+  file_type: string;
+  category: string;
+}
 
 const Awareness = () => {
+  const [resources, setResources] = useState<AwarenessResource[]>([]);
+  const [loadingResources, setLoadingResources] = useState(true);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("awareness_resources")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setResources(data || []);
+      } catch (error) {
+        console.error("Error fetching resources:", error);
+      } finally {
+        setLoadingResources(false);
+      }
+    };
+
+    fetchResources();
+  }, []);
+
+  const getFileIcon = (fileType: string) => {
+    switch (fileType.toLowerCase()) {
+      case 'video':
+        return Video;
+      case 'pdf':
+      case 'word':
+      case 'excel':
+      case 'powerpoint':
+      default:
+        return FileText;
+    }
+  };
+
   const preventionTips = [
     {
       icon: Cigarette,
@@ -150,36 +197,7 @@ const Awareness = () => {
     }
   ];
 
-  const educationalResources = [
-    {
-      icon: FileText,
-      title: "Cancer Prevention Guide",
-      description: "Comprehensive guide on lifestyle changes and preventive measures",
-      format: "PDF",
-      size: "2.4 MB"
-    },
-    {
-      icon: BookOpen,
-      title: "Understanding Cancer Types",
-      description: "Detailed information about different cancer types, symptoms, and treatments",
-      format: "PDF",
-      size: "5.1 MB"
-    },
-    {
-      icon: Video,
-      title: "Early Detection Workshop Videos",
-      description: "Video series on self-examination techniques and screening importance",
-      format: "Video",
-      size: "Series"
-    },
-    {
-      icon: FileText,
-      title: "Nutrition & Cancer Prevention",
-      description: "Evidence-based dietary guidelines for cancer prevention",
-      format: "PDF",
-      size: "1.8 MB"
-    }
-  ];
+  // Static educational resources removed - now using database resources
 
   const upcomingEvents = [
     {
@@ -378,35 +396,50 @@ const Awareness = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {educationalResources.map((resource) => (
-                <Card key={resource.title} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <resource.icon className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg">{resource.title}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary" className="text-xs">{resource.format}</Badge>
-                            <span className="text-xs text-muted-foreground">{resource.size}</span>
+            {loadingResources ? (
+              <div className="text-center py-8 text-muted-foreground">Loading resources...</div>
+            ) : resources.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No downloadable resources available at this time. Check back soon!
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-6">
+                {resources.map((resource) => {
+                  const IconComponent = getFileIcon(resource.file_type);
+                  return (
+                    <Card key={resource.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <IconComponent className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-lg">{resource.title}</CardTitle>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="secondary" className="text-xs">{resource.file_type}</Badge>
+                                <Badge variant="outline" className="text-xs">{resource.category}</Badge>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="mb-4">{resource.description}</CardDescription>
-                    <Button variant="outline" size="sm" className="w-full gap-2">
-                      <Download className="w-4 h-4" />
-                      Download Resource
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      </CardHeader>
+                      <CardContent>
+                        {resource.description && (
+                          <CardDescription className="mb-4">{resource.description}</CardDescription>
+                        )}
+                        <Button variant="outline" size="sm" className="w-full gap-2" asChild>
+                          <a href={resource.file_url} target="_blank" rel="noopener noreferrer" download>
+                            <Download className="w-4 h-4" />
+                            Download Resource
+                          </a>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -15,6 +15,7 @@ import Projects from "./pages/Projects";
 import Awareness from "./pages/Awareness";
 import Blogs from "./pages/Blogs";
 import BlogPost from "./pages/BlogPost";
+import EventRecap from "./pages/EventRecap";
 import Donate from "./pages/Donate";
 import Volunteer from "./pages/Volunteer";
 import Events from "./pages/Events";
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/awareness" element={<Awareness />} />
               <Route path="/blogs" element={<Blogs />} />
               <Route path="/blogs/:id" element={<BlogPost />} />
+              <Route path="/events/recap/:id" element={<EventRecap />} />
               <Route path="/donate" element={<Donate />} />
               <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/events" element={<Events />} />
