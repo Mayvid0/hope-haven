@@ -37,6 +37,7 @@ const Blogs = () => {
         .from('blog_posts')
         .select('*')
         .eq('status', 'published')
+        .is('linked_event_id', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

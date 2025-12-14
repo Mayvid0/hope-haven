@@ -53,6 +53,8 @@ export type Database = {
           excerpt: string
           id: string
           image: string | null
+          images: string[] | null
+          linked_event_id: string | null
           status: string
           title: string
           updated_at: string | null
@@ -65,6 +67,8 @@ export type Database = {
           excerpt: string
           id?: string
           image?: string | null
+          images?: string[] | null
+          linked_event_id?: string | null
           status?: string
           title: string
           updated_at?: string | null
@@ -77,11 +81,21 @@ export type Database = {
           excerpt?: string
           id?: string
           image?: string | null
+          images?: string[] | null
+          linked_event_id?: string | null
           status?: string
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_linked_event_id_fkey"
+            columns: ["linked_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
