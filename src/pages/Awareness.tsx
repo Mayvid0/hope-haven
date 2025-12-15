@@ -1,30 +1,35 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  Heart, 
-  Activity, 
-  Apple, 
-  Sun, 
-  Cigarette, 
-  Weight,
-  Shield,
-  Stethoscope,
-  Download,
-  BookOpen,
-  Video,
-  FileText,
-  Calendar,
-  MapPin,
-  Clock,
-  Users
-} from "lucide-react";
+import educationImg from "@/assets/awareness-education.jpg";
 import heroImg from "@/assets/awareness-hero.jpg";
 import screeningImg from "@/assets/awareness-screening.jpg";
-import educationImg from "@/assets/awareness-education.jpg";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Activity,
+  Apple,
+  Cigarette,
+  Download,
+  FileText,
+  Shield,
+  Stethoscope,
+  Sun,
+  Video,
+  Weight
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface AwarenessResource {
   id: string;
@@ -61,12 +66,12 @@ const Awareness = () => {
 
   const getFileIcon = (fileType: string) => {
     switch (fileType.toLowerCase()) {
-      case 'video':
+      case "video":
         return Video;
-      case 'pdf':
-      case 'word':
-      case 'excel':
-      case 'powerpoint':
+      case "pdf":
+      case "word":
+      case "excel":
+      case "powerpoint":
       default:
         return FileText;
     }
@@ -75,126 +80,139 @@ const Awareness = () => {
   const preventionTips = [
     {
       icon: Cigarette,
-      title: "Avoid Tobacco",
-      description: "Tobacco use is the single greatest avoidable risk factor for cancer mortality worldwide, causing an estimated 22% of cancer deaths."
+      title: "Avoid Tobacco and limit alcohol",
+      description:
+        "Tobacco use is responsible for up to 80% of oral cancers, and combining it with alcohol significantly increases the risk. Avoid smoking, chewing tobacco, and limit alcohol consumption to protect both oral and overall health.",
     },
     {
       icon: Activity,
-      title: "Stay Active",
-      description: "Regular physical activity can help reduce the risk of several types of cancer. Aim for at least 150 minutes of moderate exercise per week."
+      title: "Maintain Oral Hygiene",
+      description:
+        "Brushing twice daily, flossing, and keeping your mouth clean reduces the risk of oral infections and lesions that can contribute to cancer development. Good oral hygiene is linked to a 30–40% lower risk of oral diseases.",
     },
     {
       icon: Apple,
       title: "Healthy Diet",
-      description: "Eat plenty of fruits, vegetables, whole grains, and lean proteins. Limit processed meats, red meat, and sugary drinks."
+      description:
+        "Consuming fruits, vegetables, and foods rich in antioxidants supports oral and general health. Diets high in vitamins A, C, and E are associated with up to 50% lower risk of oral cancer.",
     },
     {
       icon: Weight,
-      title: "Maintain Healthy Weight",
-      description: "Being overweight or obese increases the risk of several cancers. Maintain a healthy body weight through diet and exercise."
+      title: "Regular Checkups",
+      description:
+        "Visiting your dentist every 6 months ensures early detection of suspicious changes. Early detection increases the 5-year survival rate from 50% to over 80% in oral cancer cases.",
     },
     {
       icon: Sun,
-      title: "Sun Protection",
-      description: "Protect your skin from harmful UV rays. Use sunscreen, wear protective clothing, and avoid tanning beds and midday sun."
+      title: "Self-Examine Your Mouth",
+      description:
+        "Protect your skin from harmful UV rays. Use sunscreen, wear protective clothing, and avoid tanning beds and midday sun.",
     },
     {
       icon: Shield,
       title: "Get Vaccinated",
-      description: "Vaccines for HPV and Hepatitis B can help prevent certain types of cancer. Consult your healthcare provider about vaccinations."
-    }
+      description:
+        "Regularly check for sores, red or white patches, lumps, or unusual changes. Detecting abnormalities early can lead to timely intervention and better outcomes.",
+    },
+    {
+      icon: Shield,
+      title: "Stay Active & Hydrated",
+      description:
+        "Maintaining physical activity, drinking plenty of water, and avoiding irritants like very hot or processed foods support overall wellbeing and help reduce cancer risk. Healthy lifestyle habits can lower general cancer risk by up to 30%.",
+    },
   ];
 
   const earlyDetectionSigns = [
     {
       category: "General Warning Signs",
       signs: [
-        "Unexplained weight loss of 10 pounds or more",
-        "Persistent fatigue that doesn't improve with rest",
-        "Fever that comes and goes without explanation",
-        "Pain that persists and has no clear cause",
-        "Changes in skin appearance or new growths"
-      ]
+        "Persistent mouth sores that don’t heal within 2 weeks",
+        "Unexplained pain or discomfort in the mouth or throat",
+        "Difficulty chewing, swallowing, or speaking",
+        "Numbness or tingling in the lips, tongue, or face",
+        "Unusual bleeding in the mouth",
+      ],
     },
     {
       category: "Specific Symptoms",
       signs: [
-        "A lump or thickening that can be felt under the skin",
-        "Changes in bowel or bladder habits",
-        "Persistent cough or trouble breathing",
-        "Difficulty swallowing or persistent indigestion",
-        "Unusual bleeding or discharge"
-      ]
-    }
+        " White or red patches on the gums, tongue, or lining of the mouth",
+        "Lumps or thickened areas in the mouth, neck, or jaw",
+        "Sores that bleed easily or do not heal",
+        "Loose teeth without obvious cause",
+        "Persistent bad breath or a feeling of something stuck in the throat",
+        "Pain radiating to the ear without ear infection",
+      ],
+    },
   ];
 
   const screeningGuidelines = [
     {
-      type: "Breast Cancer",
-      description: "Regular mammograms and clinical breast exams are crucial for early detection.",
+      type: "Tongue Cancer",
+      description:
+        "Screening: Check for persistent lumps, red or white patches, or ulcers; dentist examination every 6 months.",
       recommendations: [
-        "Women ages 40-44: Annual screening mammogram (optional, discuss with doctor)",
-        "Women ages 45-54: Annual screening mammogram",
-        "Women 55 and older: Mammogram every 1-2 years or continue yearly",
-        "Monthly breast self-exams at any age",
-        "Clinical breast exam every 1-3 years for women in their 20s and 30s"
-      ]
+        "Prevalence: Accounts for 25–30% of all oral cancers.",
+        "High-Risk Age: Most common in 40–70 years.",
+        "Risk Factors: Tobacco (smoked and smokeless), alcohol, HPV infection.",
+        "Mortality Note: Early detection can raise 5-year survival from ~50% to 80–85%.",
+      ],
     },
     {
-      type: "Colorectal Cancer",
-      description: "Screening can often find colorectal cancer early, when treatment works best.",
+      type: "Gum (Gingival) Cancer",
+      description:
+        "Screening: Look for swelling, bleeding, or unusual growths; dental checkups recommended every 6 months.",
       recommendations: [
-        "Average risk: Begin screening at age 45",
-        "Colonoscopy every 10 years",
-        "CT colonography every 5 years",
-        "Flexible sigmoidoscopy every 5 years",
-        "Stool-based tests annually (FIT or gFOBT)",
-        "Higher frequency for those with family history or risk factors"
-      ]
+        "Prevalence: About 10–15% of oral cancers.",
+        "High-Risk Age: Usually 50–70 years.",
+        "Risk Factors: Poor oral hygiene, chronic irritation from teeth or dentures, tobacco.",
+        "Prognosis: Early-stage detection has ~70–90% survival rate.",
+      ],
     },
     {
-      type: "Cervical Cancer",
-      description: "Regular screening can prevent most cervical cancers by detecting precancerous changes.",
+      type: "Floor of Mouth Cancer",
+      description:
+        "Screening: Self-examine for lumps, ulcers, or red/white patches; dental visits for visual and palpation exams.",
       recommendations: [
-        "Ages 21-29: Pap test every 3 years",
-        "Ages 30-65: Pap test + HPV test every 5 years (preferred), or Pap test alone every 3 years",
-        "Over 65: May discontinue if adequate prior screening and not high risk",
-        "HPV vaccination recommended for ages 9-26"
-      ]
+        "Prevalence: Around 7–10% of oral cancers.",
+        "High-Risk Age: Typically 45–65 years.",
+        "Risk Factors: Heavy tobacco and alcohol use, men more affected.",
+        "Prognosis: Early detection increases survival to ~80%, late-stage drops below 50%.",
+      ],
     },
     {
-      type: "Lung Cancer",
-      description: "Low-dose CT screening can detect lung cancer at an early, more treatable stage.",
+      type: "Palate Cancer",
+      description:
+        "Screening: Examine for persistent ulceration or thickening on the hard or soft palate; regular oral exams by dentists.",
       recommendations: [
-        "Ages 50-80 with 20 pack-year smoking history",
-        "Current smokers or quit within past 15 years",
-        "Annual low-dose CT scan (LDCT)",
-        "Discuss screening benefits and risks with healthcare provider",
-        "Screening not recommended for those with serious health conditions"
-      ]
+        "Prevalence: Roughly 5–7% of oral cancers.",
+        "High-Risk Age: Mostly affects people 50+ years.",
+        "Risk Factors: Tobacco, alcohol, poorly fitted dentures.",
+        "Prognosis: Early detection greatly improves outcomes; late detection has <50% 5-year survival.",
+      ],
     },
     {
-      type: "Prostate Cancer",
-      description: "Screening decisions should be made after discussing with a healthcare provider.",
+      type: "Lip Cancer",
+      description:
+        "Screening: Inspect lips for sores, crusts, or non-healing ulcers; high vigilance for sun-exposed areas.",
       recommendations: [
-        "Age 50: Discuss PSA screening with doctor (average risk men)",
-        "Age 45: Consider screening for higher risk (African American men, family history)",
-        "Age 40: For those with multiple first-degree relatives with prostate cancer",
-        "PSA blood test and digital rectal exam (DRE)",
-        "Frequency depends on PSA level and risk factors"
-      ]
+        "Prevalence: Accounts for 10–15% of oral cancers; lower lip more affected than upper.",
+        "High-Risk Age: Common in 60+ years, especially men.",
+        "Risk Factors: Chronic sun exposure, smoking, alcohol.",
+        "Prognosis: Usually detected early; 90% survival if treated promptly.",
+      ],
     },
     {
-      type: "Skin Cancer",
-      description: "Regular skin self-exams and professional skin exams can detect skin cancer early.",
+      type: "Oropharyngeal Cancer (Throat, Tonsil, Base of Tongue)",
+      description:
+        "Screening: Watch for persistent sore throat, difficulty swallowing, ear pain, or lumps in the neck; ENT or dental exams recommended.",
       recommendations: [
-        "Monthly skin self-examinations for everyone",
-        "Professional skin exam annually for high-risk individuals",
-        "Watch for changes in moles using the ABCDE rule",
-        "Higher risk: Fair skin, many moles, family history, history of sunburns",
-        "Protect skin from UV exposure year-round"
-      ]
-    }
+        "Prevalence: Accounts for 15–20% of head and neck cancers.",
+        "High-Risk Age: Most common in 50–70 years, but HPV-related cases are rising in younger adults (30–45 years).",
+        "Risk Factors: HPV infection, tobacco, alcohol, poor oral hygiene.",
+        "Prognosis: HPV-positive tumors respond better to treatment; overall 5-year survival ~60–70%.",
+      ],
+    },
   ];
 
   // Static educational resources removed - now using database resources
@@ -206,7 +224,8 @@ const Awareness = () => {
       time: "8:00 AM - 12:00 PM",
       location: "Central Park, Main Plaza",
       attendees: "500+ expected",
-      description: "Join us for our annual awareness walk. Registration includes a t-shirt, breakfast, and educational materials."
+      description:
+        "Join us for our annual awareness walk. Registration includes a t-shirt, breakfast, and educational materials.",
     },
     {
       title: "Free Skin Cancer Screening",
@@ -214,7 +233,8 @@ const Awareness = () => {
       time: "9:00 AM - 4:00 PM",
       location: "Hope & Healing Center",
       attendees: "Limited spots",
-      description: "Professional dermatologists will provide free skin examinations. Appointments required."
+      description:
+        "Professional dermatologists will provide free skin examinations. Appointments required.",
     },
     {
       title: "Cancer Prevention Seminar",
@@ -222,7 +242,8 @@ const Awareness = () => {
       time: "6:00 PM - 8:00 PM",
       location: "Community Health Center",
       attendees: "100 seats available",
-      description: "Expert panel discussion on lifestyle choices and cancer prevention strategies. Q&A session included."
+      description:
+        "Expert panel discussion on lifestyle choices and cancer prevention strategies. Q&A session included.",
     },
     {
       title: "Colorectal Cancer Awareness Day",
@@ -230,8 +251,9 @@ const Awareness = () => {
       time: "10:00 AM - 2:00 PM",
       location: "Medical District Plaza",
       attendees: "Open to public",
-      description: "Information booths, free screening vouchers, and educational presentations about colorectal cancer."
-    }
+      description:
+        "Information booths, free screening vouchers, and educational presentations about colorectal cancer.",
+    },
   ];
 
   return (
@@ -239,20 +261,23 @@ const Awareness = () => {
       {/* Hero Section */}
       <section className="relative h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img 
-            src={heroImg} 
+          <img
+            src={heroImg}
             alt="Cancer awareness and prevention"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/60" />
         </div>
         <div className="relative z-10 container mx-auto px-4 text-center">
-          <Badge className="mb-4 text-base px-4 py-1">Cancer Awareness & Prevention</Badge>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
-            Knowledge Saves Lives
+          <Badge className="mb-4 text-base px-4 py-1">
+            Cancer Awareness & Prevention
+          </Badge>
+          <h1 className="text-4xl md:text-6xl font-semibold mb-6 text-foreground">
+            Awareness saves lives
           </h1>
           <p className="text-xl text-foreground/90 max-w-3xl mx-auto">
-            Empowering you with information about cancer prevention, early detection, and screening guidelines
+            Learn how to protect yourself from oral cancer with prevention tips,
+            early detection guidance, and regular dental checkups.
           </p>
         </div>
       </section>
@@ -261,15 +286,22 @@ const Awareness = () => {
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 text-foreground">Cancer Prevention Tips</h2>
+            <h2 className="text-3xl font-bold mb-4 text-foreground">
+              Cancer Prevention Tips
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Up to 50% of cancers are preventable through lifestyle modifications and healthy choices
+              Up to 80–90% of oral cancers can be prevented by avoiding tobacco
+              and alcohol, maintaining oral hygiene, and getting regular
+              screenings.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {preventionTips.map((tip) => (
-              <Card key={tip.title} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={tip.title}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <tip.icon className="w-6 h-6 text-primary" />
@@ -293,9 +325,12 @@ const Awareness = () => {
               <div className="inline-block p-3 bg-primary/10 rounded-full mb-4">
                 <Stethoscope className="w-8 h-8 text-primary" />
               </div>
-              <h2 className="text-3xl font-bold mb-4 text-foreground">Early Detection Guidelines</h2>
+              <h2 className="text-3xl font-bold mb-4 text-foreground">
+                Early Detection Guidelines
+              </h2>
               <p className="text-lg text-muted-foreground">
-                Recognizing warning signs early can significantly improve treatment outcomes
+                Recognizing warning signs early can significantly improve
+                treatment outcomes
               </p>
             </div>
 
@@ -303,12 +338,17 @@ const Awareness = () => {
               {earlyDetectionSigns.map((section) => (
                 <Card key={section.category}>
                   <CardHeader>
-                    <CardTitle className="text-lg">{section.category}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {section.category}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
                       {section.signs.map((sign, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm">
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 text-sm"
+                        >
                           <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
                           <span className="text-muted-foreground">{sign}</span>
                         </li>
@@ -322,8 +362,10 @@ const Awareness = () => {
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="pt-6">
                 <p className="text-center text-muted-foreground">
-                  <strong className="text-foreground">Important:</strong> Having one or more of these symptoms doesn't mean you have cancer. 
-                  However, if symptoms persist for more than two weeks, consult your healthcare provider for evaluation.
+                  <strong className="text-foreground">Important:</strong> If you
+                  notice any of these signs for more than 2 weeks, consult a
+                  dentist immediately. Early detection greatly improves
+                  treatment outcomes.
                 </p>
               </CardContent>
             </Card>
@@ -336,30 +378,41 @@ const Awareness = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <img 
-                src={screeningImg} 
+              <img
+                src={screeningImg}
                 alt="Cancer screening equipment"
                 className="w-full h-64 object-cover rounded-lg mb-8"
               />
-              <h2 className="text-3xl font-bold mb-4 text-foreground">Screening Recommendations by Cancer Type</h2>
+              <h2 className="text-3xl font-bold mb-4 text-foreground">
+                Screening Recommendations by Cancer Type
+              </h2>
               <p className="text-lg text-muted-foreground">
-                Regular screening can detect cancer before symptoms appear, when treatment is most effective
+                Regular screenings and early detection are key to preventing
+                serious outcomes from oral and head & neck cancers
               </p>
             </div>
 
             <Accordion type="single" collapsible className="w-full space-y-4">
               {screeningGuidelines.map((guideline, index) => (
-                <AccordionItem key={guideline.type} value={`item-${index}`} className="border rounded-lg px-6">
+                <AccordionItem
+                  key={guideline.type}
+                  value={`item-${index}`}
+                  className="border rounded-lg px-6"
+                >
                   <AccordionTrigger className="text-lg font-semibold hover:no-underline">
                     {guideline.type}
                   </AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-muted-foreground mb-4">{guideline.description}</p>
+                    <p className="text-muted-foreground mb-4">
+                      {guideline.description}
+                    </p>
                     <ul className="space-y-2">
                       {guideline.recommendations.map((rec, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <Shield className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                          <span className="text-sm text-muted-foreground">{rec}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {rec}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -371,8 +424,11 @@ const Awareness = () => {
             <Card className="mt-8 bg-accent/10 border-accent/20">
               <CardContent className="pt-6">
                 <p className="text-center text-muted-foreground">
-                  <strong className="text-foreground">Note:</strong> These are general guidelines. Your healthcare provider may recommend 
-                  different screening schedules based on your personal and family medical history, risk factors, and other considerations.
+                  <strong className="text-foreground">Note:</strong> These are
+                  general guidelines—your dentist or healthcare professional can
+                  provide personalized advice based on your medical history,
+                  family history, risk factors, and other considerations
+                  considerations.
                 </p>
               </CardContent>
             </Card>
@@ -385,29 +441,38 @@ const Awareness = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <img 
-                src={educationImg} 
+              <img
+                src={educationImg}
                 alt="Cancer education workshop"
                 className="w-full h-64 object-cover rounded-lg mb-8"
               />
-              <h2 className="text-3xl font-bold mb-4 text-foreground">Educational Resources</h2>
+              <h2 className="text-3xl font-bold mb-4 text-foreground">
+                Educational Resources
+              </h2>
               <p className="text-lg text-muted-foreground">
-                Download free resources to learn more about cancer prevention and early detection
+                Download free resources to learn more about cancer prevention
+                and early detection
               </p>
             </div>
 
             {loadingResources ? (
-              <div className="text-center py-8 text-muted-foreground">Loading resources...</div>
+              <div className="text-center py-8 text-muted-foreground">
+                Loading resources...
+              </div>
             ) : resources.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No downloadable resources available at this time. Check back soon!
+                No downloadable resources available at this time. Check back
+                soon!
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-6">
                 {resources.map((resource) => {
                   const IconComponent = getFileIcon(resource.file_type);
                   return (
-                    <Card key={resource.id} className="hover:shadow-lg transition-shadow">
+                    <Card
+                      key={resource.id}
+                      className="hover:shadow-lg transition-shadow"
+                    >
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
@@ -415,10 +480,16 @@ const Awareness = () => {
                               <IconComponent className="w-5 h-5 text-primary" />
                             </div>
                             <div>
-                              <CardTitle className="text-lg">{resource.title}</CardTitle>
+                              <CardTitle className="text-lg">
+                                {resource.title}
+                              </CardTitle>
                               <div className="flex items-center gap-2 mt-1">
-                                <Badge variant="secondary" className="text-xs">{resource.file_type}</Badge>
-                                <Badge variant="outline" className="text-xs">{resource.category}</Badge>
+                                <Badge variant="secondary" className="text-xs">
+                                  {resource.file_type}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {resource.category}
+                                </Badge>
                               </div>
                             </div>
                           </div>
@@ -426,10 +497,22 @@ const Awareness = () => {
                       </CardHeader>
                       <CardContent>
                         {resource.description && (
-                          <CardDescription className="mb-4">{resource.description}</CardDescription>
+                          <CardDescription className="mb-4">
+                            {resource.description}
+                          </CardDescription>
                         )}
-                        <Button variant="outline" size="sm" className="w-full gap-2" asChild>
-                          <a href={resource.file_url} target="_blank" rel="noopener noreferrer" download>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full gap-2"
+                          asChild
+                        >
+                          <a
+                            href={resource.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download
+                          >
                             <Download className="w-4 h-4" />
                             Download Resource
                           </a>
@@ -444,7 +527,7 @@ const Awareness = () => {
         </div>
       </section>
 
-      {/* Upcoming Events */}
+      {/* Upcoming Events
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
@@ -452,15 +535,21 @@ const Awareness = () => {
               <div className="inline-block p-3 bg-primary/10 rounded-full mb-4">
                 <Calendar className="w-8 h-8 text-primary" />
               </div>
-              <h2 className="text-3xl font-bold mb-4 text-foreground">Upcoming Awareness Events</h2>
+              <h2 className="text-3xl font-bold mb-4 text-foreground">
+                Upcoming Awareness Events
+              </h2>
               <p className="text-lg text-muted-foreground">
-                Join us at community events focused on education, screening, and support
+                Join us at community events focused on education, screening, and
+                support
               </p>
             </div>
 
             <div className="space-y-6">
               {upcomingEvents.map((event) => (
-                <Card key={event.title} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card
+                  key={event.title}
+                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                >
                   <div className="md:flex">
                     <div className="bg-primary text-primary-foreground p-6 md:w-48 flex flex-col items-center justify-center text-center">
                       <Calendar className="w-8 h-8 mb-2" />
@@ -469,7 +558,9 @@ const Awareness = () => {
                     <div className="flex-1 p-6">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="text-xl font-bold mb-2">{event.title}</h3>
+                          <h3 className="text-xl font-bold mb-2">
+                            {event.title}
+                          </h3>
                           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
@@ -486,7 +577,9 @@ const Awareness = () => {
                           </div>
                         </div>
                       </div>
-                      <p className="text-muted-foreground mb-4">{event.description}</p>
+                      <p className="text-muted-foreground mb-4">
+                        {event.description}
+                      </p>
                       <Button size="sm" className="gap-2">
                         Register Now <Heart className="w-4 h-4" />
                       </Button>
@@ -497,20 +590,27 @@ const Awareness = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Stay Informed, Stay Healthy</h2>
+          <h2 className="text-3xl font-bold mb-4">
+            Stay Informed, Stay Healthy
+          </h2>
           <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
-            Subscribe to our newsletter for the latest information on cancer prevention, screening guidelines, and upcoming events
+            Subscribe to our newsletter for the latest information on cancer
+            prevention, screening guidelines, and upcoming events
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary">
               Subscribe to Newsletter
             </Button>
-            <Button size="lg" variant="outline" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+            <Button
+              size="lg"
+              variant="outline"
+              className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+            >
               Contact Us for More Info
             </Button>
           </div>

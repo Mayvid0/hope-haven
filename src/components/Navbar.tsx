@@ -1,21 +1,22 @@
+import navlogo from "@/assets/logo.png";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import { LogOut, Menu, User, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Menu, X, Heart, LogOut, User } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
 
 const navigationLinks = [
   { name: "Home", path: "/" },
   { name: "About", path: "/about" },
   { name: "Mission", path: "/mission" },
   { name: "Teams", path: "/teams" },
-  { name: "Projects", path: "/projects" },
+  // { name: "Projects", path: "/projects" },
   { name: "Awareness", path: "/awareness" },
   { name: "Events", path: "/events" },
   { name: "Gallery", path: "/gallery" },
   { name: "Blogs", path: "/blogs" },
-  { name: "Testimony", path: "/testimony" },
+  // { name: "Testimony", path: "/testimony" },
   { name: "Contact", path: "/contact" },
 ];
 
@@ -28,9 +29,13 @@ export const Navbar = () => {
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary">
-            <Heart className="h-6 w-6 fill-secondary text-secondary" />
-            <span>Hope & Healing</span>
+          <Link
+            to="/"
+            className="flex items-center gap-2 font-bold text-xl text-primary"
+          >
+            {/* <Heart className="h-6 w-6 fill-secondary text-secondary" /> */}
+            <img src={navlogo} alt="HOPE-VCare Logo" className="h-10 w-auto" />
+            <span className="w-auto font-extrabold " >HopeVcare</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -138,10 +143,15 @@ export const Navbar = () => {
                 </Link>
               </Button>
               {user ? (
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => {
-                  signOut();
-                  setIsOpen(false);
-                }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    signOut();
+                    setIsOpen(false);
+                  }}
+                >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </Button>

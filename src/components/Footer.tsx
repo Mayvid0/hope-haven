@@ -1,4 +1,5 @@
-import { Heart, Mail, Phone, MapPin } from "lucide-react";
+import navlogo from "@/assets/logo.png";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const Footer = () => {
@@ -9,11 +10,11 @@ export const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 font-bold text-xl text-primary">
-              <Heart className="h-6 w-6 fill-secondary text-secondary" />
-              <span>Hope & Healing</span>
+              <img src={navlogo} alt="HOPE-VCare Logo" className="h-10 w-auto" />
+              <span>HopeVcare</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Supporting cancer patients and their families with compassion, resources, and hope.
+              Supporting oral cancer patients with compassion, resources, and hope.
             </p>
           </div>
 
@@ -36,11 +37,7 @@ export const Footer = () => {
                   Our Team
                 </Link>
               </li>
-              <li>
-                <Link to="/projects" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Projects
-                </Link>
-              </li>
+              
             </ul>
           </div>
 
@@ -63,11 +60,7 @@ export const Footer = () => {
                   Awareness Programs
                 </Link>
               </li>
-              <li>
-                <Link to="/testimony" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Share Your Story
-                </Link>
-              </li>
+              
             </ul>
           </div>
 
@@ -81,18 +74,18 @@ export const Footer = () => {
               </li>
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>+1 (555) 123-4567</span>
+                <span>+91 9622110222</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>123 Hope Street, City, State 12345</span>
+                <span>WHITE Advanced Dental Treatment Academics & Research, Jammu</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Hope & Healing. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} HopeVcare. All rights reserved.</p>
         </div>
       </div>
     </footer>

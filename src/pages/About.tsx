@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Heart, Users, Target, Award } from "lucide-react";
+import { Heart } from "lucide-react";
 
 const About = () => {
   return (
@@ -9,7 +9,7 @@ const About = () => {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">About Us</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Founded on compassion and driven by hope, we're dedicated to supporting cancer patients and their families through every step of their journey.
+            HopeVcare is a dedicated oral cancer foundation committed to turning awareness into action. We focus on early detection, patient support, research, and community education to reduce the impact of oral cancer.
           </p>
         </div>
 
@@ -20,13 +20,14 @@ const About = () => {
               <h2 className="text-3xl font-bold mb-6">Our Story</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Hope & Healing was founded in 2010 by a group of cancer survivors, healthcare professionals, and community leaders who recognized the immense challenges faced by cancer patients beyond medical treatment.
+                  Oral cancer often goes unnoticed until it becomes serious. Many lives are affected simply because the signs were not seen early. HopeVcare was born in 2025 from a simple thought: if oral cancer is found early, lives can be saved.
                 </p>
                 <p>
-                  What began as a small support group has grown into a comprehensive organization serving thousands of patients and families each year. We believe that no one should face cancer alone, and that every patient deserves access to the support, resources, and compassion they need to fight this disease with dignity and hope.
+As dental professionals, we saw how a small mouth check could make a big difference. Yet many people — especially in communities with limited access to care—never get screened in time
                 </p>
                 <p>
-                  Today, we're proud to work alongside dedicated volunteers, healthcare providers, and community partners to make a lasting impact in the lives of those affected by cancer.
+What started as a small effort to spread awareness grew into a mission to bring early screening, education, and support directly to people — through dental clinics, community camps, and compassionate guidance.
+Today, HopeVcare works with one purpose: to help people detect oral cancer early, reach the right care on time, and face the journey with hope and support.
                 </p>
               </div>
             </Card>
@@ -41,33 +42,58 @@ const About = () => {
               <Heart className="h-12 w-12 text-primary mx-auto" />
               <h3 className="text-xl font-semibold">Compassion</h3>
               <p className="text-sm text-muted-foreground">
-                Every interaction is guided by empathy, understanding, and genuine care for those we serve.
+                Empathy and patient-centered care at every stage.
               </p>
             </Card>
 
             <Card className="p-6 text-center space-y-4">
-              <Users className="h-12 w-12 text-secondary mx-auto" />
-              <h3 className="text-xl font-semibold">Community</h3>
+              <Heart className="h-12 w-12 text-primary mx-auto" />
+              <h3 className="text-xl font-semibold">Integrity</h3>
               <p className="text-sm text-muted-foreground">
-                Together we're stronger. We build supportive networks that uplift and empower.
+                Ethics, transparency, and trust in all initiatives.
               </p>
             </Card>
 
             <Card className="p-6 text-center space-y-4">
-              <Target className="h-12 w-12 text-accent mx-auto" />
-              <h3 className="text-xl font-semibold">Impact</h3>
+              <Heart className="h-12 w-12 text-primary mx-auto" />
+              <h3 className="text-xl font-semibold">Innovation</h3>
               <p className="text-sm text-muted-foreground">
-                We're committed to making measurable, meaningful differences in patients' lives.
+                Using research and technology to improve outcomes.
               </p>
             </Card>
 
             <Card className="p-6 text-center space-y-4">
-              <Award className="h-12 w-12 text-primary mx-auto" />
-              <h3 className="text-xl font-semibold">Excellence</h3>
+              <Heart className="h-12 w-12 text-primary mx-auto" />
+              <h3 className="text-xl font-semibold">Collaboration</h3>
               <p className="text-sm text-muted-foreground">
-                We strive for the highest standards in everything we do, from patient care to advocacy.
+                Partnering with professionals, institutions, and communities.
               </p>
             </Card>
+
+            <Card className="p-6 text-center space-y-4">
+              <Heart className="h-12 w-12 text-primary mx-auto" />
+              <h3 className="text-xl font-semibold">Education</h3>
+              <p className="text-sm text-muted-foreground">
+                Empowering people with oral cancer knowledge.
+              </p>
+            </Card>
+
+            <Card className="p-6 text-center space-y-4">
+              <Heart className="h-12 w-12 text-primary mx-auto" />
+              <h3 className="text-xl font-semibold">Early detection</h3>
+              <p className="text-sm text-muted-foreground">
+                Promoting regular screenings and awareness.
+              </p>
+            </Card>
+
+            <Card className="p-6 text-center space-y-4">
+              <Heart className="h-12 w-12 text-primary mx-auto" />
+              <h3 className="text-xl font-semibold">Rehabilitation</h3>
+              <p className="text-sm text-muted-foreground">
+                Supporting post-treatment recovery and well-being.
+              </p>
+            </Card>
+            
           </div>
         </section>
 
@@ -76,7 +102,7 @@ const About = () => {
           <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-3xl font-bold mb-4">Led by Experience, Driven by Heart</h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Our leadership team brings together decades of experience in healthcare, non-profit management, and community advocacy.
+              Led by dental professionals, we combine clinical experience with compassion to bring early screening and hope to communities.
             </p>
             <p className="text-muted-foreground">
               Visit our <a href="/teams" className="text-primary hover:underline font-medium">Teams page</a> to learn more about the dedicated individuals leading our mission.

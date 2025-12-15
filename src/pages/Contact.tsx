@@ -1,10 +1,10 @@
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { useState } from "react";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -77,7 +77,7 @@ const Contact = () => {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="+91 8897778526"
                 />
               </div>
 
@@ -119,8 +119,8 @@ const Contact = () => {
                 <Phone className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold mb-1">Phone</h3>
-                  <p className="text-muted-foreground">Main: +1 (555) 123-4567</p>
-                  <p className="text-muted-foreground">24/7 Helpline: +1 (555) 987-6543</p>
+                  <p className="text-muted-foreground">Main: +91 9622110222</p>
+                  {/* <p className="text-muted-foreground">24/7 Helpline: +1 (555) 987-6543</p> */}
                 </div>
               </div>
             </Card>
@@ -131,9 +131,10 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold mb-1">Address</h3>
                   <p className="text-muted-foreground">
-                    123 Hope Street<br />
-                    Medical District<br />
-                    City, State 12345
+                    WHITE Advanced Dental Treatment Academics & Research<br />
+                    Shree Ram Finance Building, 12 - B<br />
+                    near Nirankari Bhawan, Digiana, Shastri Nagar<br/>
+                    Jammu, J&K 180004
                   </p>
                 </div>
               </div>
@@ -144,10 +145,10 @@ const Contact = () => {
                 <Clock className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold mb-1">Office Hours</h3>
-                  <p className="text-muted-foreground">Monday - Friday: 9:00 AM - 6:00 PM</p>
-                  <p className="text-muted-foreground">Saturday: 10:00 AM - 4:00 PM</p>
+                  <p className="text-muted-foreground"> 11:00 AM - 6:00 PM</p>
+                  {/* <p className="text-muted-foreground">Saturday: 10:00 AM - 4:00 PM</p>
                   <p className="text-muted-foreground">Sunday: Closed</p>
-                  <p className="text-sm text-primary mt-2">Emergency support available 24/7</p>
+                  <p className="text-sm text-primary mt-2">Emergency support available 24/7</p> */}
                 </div>
               </div>
             </Card>

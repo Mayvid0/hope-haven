@@ -1,18 +1,21 @@
+import heroImage from "@/assets/bg.jpg";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BookOpen, HandHeart, Heart, Phone, Target, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Heart, Users, Target, HandHeart, BookOpen, Phone } from "lucide-react";
-import heroImage from "@/assets/hero-cancer-support.jpg";
 
 const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[600px] flex items-center justify-center ">
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-fixed"
           style={{
             backgroundImage: `url(${heroImage})`,
+            backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/60" />
@@ -21,11 +24,11 @@ const Home = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-2xl space-y-6">
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-              Together, We Fight
-              <span className="text-primary"> Cancer</span>
+              From Awareness to Action – fight against
+              <span className="text-primary"> Oral cancer.</span>
             </h1>
-            <p className="text-xl text-muted-foreground">
-              Supporting patients, empowering families, and spreading hope through compassionate care and community.
+            <p className="text-xl font-semibold text-muted-foreground">
+              From early screening to ongoing support, we stand with individuals and communities to make a difference.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="text-base">
@@ -52,25 +55,47 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
               <Heart className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Patient Support</h3>
+              <h3 className="text-xl font-semibold mb-2">Early Detection First</h3>
               <p className="text-muted-foreground">
-                Direct assistance with medical expenses, transportation, and daily living needs for cancer patients.
+                We focus on identifying oral cancer at its earliest stage through routine dental screenings and community-based examinations—when treatment is most effective.
               </p>
             </Card>
 
             <Card className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
               <Users className="h-12 w-12 text-secondary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Family Care</h3>
+              <h3 className="text-xl font-semibold mb-2">Awareness That Leads to Action</h3>
               <p className="text-muted-foreground">
-                Emotional support groups, counseling services, and resources for families navigating cancer together.
+                We educate people to recognize early warning signs, practice self-examination, and reduce risk factors like tobacco and areca nut use.
               </p>
             </Card>
 
             <Card className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
               <Target className="h-12 w-12 text-accent mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Awareness Programs</h3>
+              <h3 className="text-xl font-semibold mb-2">Dentists as Frontline Defenders</h3>
               <p className="text-muted-foreground">
-                Education and early detection campaigns to help prevent and identify cancer in its earliest stages.
+                We empower dental professionals with screening protocols and referral pathways, making oral cancer checks a standard part of every dental visit.
+              </p>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+              <Target className="h-12 w-12 text-accent mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Reaching the Unreached</h3>
+              <p className="text-muted-foreground">
+                Through free screening camps and outreach programs, we bring early detection services to underserved and high-risk communities.
+              </p>
+            </Card>
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+              <Target className="h-12 w-12 text-accent mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Support Beyond Diagnosis</h3>
+              <p className="text-muted-foreground">
+                We help patients navigate referrals, treatment pathways, and emotional challenges—ensuring continuity of care after detection.
+              </p>
+            </Card>
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+              <Target className="h-12 w-12 text-accent mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Prevention for the Future</h3>
+              <p className="text-muted-foreground">
+                By combining education, clinical expertise, and community partnerships, we work toward reducing late-stage oral cancer diagnoses.
               </p>
             </Card>
           </div>
@@ -78,7 +103,7 @@ const Home = () => {
       </section>
 
       {/* Impact Stats */}
-      <section className="py-20">
+      {/* <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             <div>
@@ -99,7 +124,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Sections */}
       <section className="py-20 bg-muted">
@@ -118,12 +143,12 @@ const Home = () => {
 
             <Card className="p-8 text-center space-y-4 hover:shadow-lg transition-all duration-300">
               <BookOpen className="h-16 w-16 text-secondary mx-auto" />
-              <h3 className="text-2xl font-bold">Read Stories</h3>
+              <h3 className="text-2xl font-bold">Awareness</h3>
               <p className="text-muted-foreground">
-                Be inspired by testimonies from survivors and families we've helped.
+                Be aware about how to protect yourself and prevent oral cancer.
               </p>
               <Button asChild variant="outline" className="w-full">
-                <Link to="/testimony">View Testimonies</Link>
+                <Link to="/awareness">Learn more</Link>
               </Button>
             </Card>
 
